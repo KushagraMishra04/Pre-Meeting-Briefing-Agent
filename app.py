@@ -1,6 +1,7 @@
 """
 Pre-Meeting Briefing Agent - Executive Intelligence Dashboard.
 A fast, beautiful, and grounded briefing tool for high-stakes meetings.
+Light & modern aesthetic.
 """
 import os
 from datetime import datetime, time, timedelta
@@ -20,210 +21,244 @@ from src.demo_data import get_demo_briefs
 # ==========================================
 st.set_page_config(
     page_title="Briefly • Executive Briefing Agent",
-    page_icon="⚡",
+    page_icon="📋",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
 # ==========================================
-# MODERN CSS STYLING (Executive SaaS Look)
+# MODERN LIGHT SAAS THEME (Crisp & Clean)
 # ==========================================
 st.markdown("""
 <style>
-    /* Global layout polish */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     
     html, body, [class*="css"] {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    
-    /* Top Navigation / App Banner */
-    .app-nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 0 20px 0;
-        border-bottom: 1px solid #E2E8F0;
-        margin-bottom: 24px;
-    }
-    .app-brand {
-        font-size: 1.5rem;
-        font-weight: 700;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         color: #0F172A;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .app-tagline {
-        font-size: 0.9rem;
-        color: #64748B;
-        margin-top: 2px;
     }
     
-    /* Hero Banner */
-    .hero-container {
-        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-        border-radius: 12px;
-        padding: 28px 32px;
-        color: #FFFFFF;
-        margin-bottom: 24px;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-    }
-    .hero-title {
-        font-size: 1.8rem;
-        font-weight: 700;
-        letter-spacing: -0.5px;
-        margin-bottom: 6px;
-    }
-    .hero-sub {
-        font-size: 0.98rem;
-        color: #94A3B8;
-        line-height: 1.5;
-        max-width: 780px;
+    /* Main container background */
+    .stApp {
+        background-color: #F8FAFC;
     }
     
-    /* Demo Preset Cards */
-    .demo-bar {
-        margin: 16px 0 24px 0;
-    }
-    .demo-label {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #475569;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 10px;
-    }
-    
-    /* Executive Memo Canvas */
-    .memo-paper {
+    /* Top Banner / Hero Card (Light & Airy) */
+    .light-hero {
         background: #FFFFFF;
-        border: 1px solid #CBD5E1;
-        border-radius: 10px;
-        padding: 32px 36px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-        margin-top: 16px;
-        margin-bottom: 30px;
-    }
-    .memo-header {
-        border-bottom: 2px solid #0F172A;
-        padding-bottom: 18px;
-        margin-bottom: 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-    }
-    .memo-title {
-        font-size: 1.9rem;
-        font-weight: 800;
-        color: #0F172A;
-        margin: 0;
-        letter-spacing: -0.5px;
-    }
-    .memo-category-badge {
-        display: inline-block;
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #0284C7;
-        background: #E0F2FE;
-        padding: 3px 10px;
-        border-radius: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 6px;
-    }
-    
-    /* Sections inside Memo */
-    .memo-section {
-        margin-bottom: 22px;
-    }
-    .memo-sec-header {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #0284C7;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 8px;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 24px 28px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         display: flex;
         align-items: center;
-        gap: 6px;
+        justify-content: space-between;
     }
-    .memo-body-text {
-        font-size: 0.95rem;
-        line-height: 1.6;
-        color: #1E293B;
-    }
-    .memo-bullet {
-        font-size: 0.92rem;
-        line-height: 1.55;
-        color: #1E293B;
-        margin-bottom: 8px;
-        padding-left: 4px;
-    }
-    
-    /* Strategic Question Card */
-    .question-card {
-        background: #F8FAFC;
-        border-left: 4px solid #0284C7;
-        border-radius: 0 8px 8px 0;
-        padding: 14px 18px;
-        margin-bottom: 10px;
-    }
-    .question-card-title {
-        font-weight: 600;
-        color: #0F172A;
-        font-size: 0.92rem;
-    }
-    
-    /* Citation pill tag */
-    .citation-tag {
-        display: inline-block;
-        color: #0284C7;
-        font-weight: 600;
-        font-size: 0.82rem;
-        margin-left: 2px;
-        text-decoration: none;
-    }
-    
-    /* Scope pills */
-    .badge-pill {
+    .hero-badge {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 4px 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #2563EB;
+        background: #EFF6FF;
+        border: 1px solid #DBEAFE;
+        padding: 4px 10px;
         border-radius: 20px;
-        background: #F1F5F9;
-        color: #334155;
-        font-size: 0.82rem;
-        font-weight: 500;
-        border: 1px solid #E2E8F0;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 8px;
+    }
+    .hero-title {
+        font-size: 1.65rem;
+        font-weight: 800;
+        color: #0F172A;
+        letter-spacing: -0.5px;
+        margin: 0 0 4px 0;
+    }
+    .hero-desc {
+        font-size: 0.92rem;
+        color: #64748B;
+        margin: 0;
     }
     
-    /* Hide default Streamlit footer */
+    /* Search Box Container */
+    .search-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    
+    /* Executive Memo Canvas (Pure White Sheet) */
+    .memo-paper {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 36px 40px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        margin-top: 12px;
+        margin-bottom: 30px;
+    }
+    .memo-header {
+        border-bottom: 1.5px solid #F1F5F9;
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .memo-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: #0F172A;
+        letter-spacing: -0.8px;
+        margin: 0 0 4px 0;
+    }
+    .memo-sub {
+        font-size: 0.95rem;
+        color: #64748B;
+        font-weight: 500;
+    }
+    
+    /* Badges */
+    .pill-meeting {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        background: #F1F5F9;
+        color: #334155;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid #E2E8F0;
+    }
+    .pill-window {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        background: #EFF6FF;
+        color: #2563EB;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid #BFDBFE;
+    }
+    
+    /* Sections */
+    .sec-badge {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #2563EB;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        margin-bottom: 8px;
+    }
+    
+    /* Snapshot Box */
+    .snapshot-box {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-left: 4px solid #2563EB;
+        border-radius: 8px;
+        padding: 14px 18px;
+        font-size: 0.98rem;
+        line-height: 1.6;
+        color: #1E293B;
+        font-weight: 500;
+        margin-bottom: 24px;
+    }
+    
+    /* Bullet points */
+    .memo-bullet {
+        font-size: 0.92rem;
+        line-height: 1.6;
+        color: #1E293B;
+        margin-bottom: 10px;
+        position: relative;
+        padding-left: 18px;
+    }
+    .memo-bullet::before {
+        content: "•";
+        position: absolute;
+        left: 2px;
+        color: #2563EB;
+        font-weight: bold;
+        font-size: 1.2rem;
+        line-height: 1;
+    }
+    
+    /* Question Card (Light Cyan/Sky Tint) */
+    .question-card {
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-left: 4px solid #0284C7;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        font-size: 0.90rem;
+        color: #0369A1;
+        font-weight: 500;
+        line-height: 1.5;
+    }
+    
+    /* Sources Grid Item */
+    .source-chip {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        transition: all 0.2s ease;
+    }
+    .source-chip:hover {
+        border-color: #CBD5E1;
+        background: #F1F5F9;
+    }
+    
+    /* Custom button styling overrides for cleaner look */
+    div.stButton > button:first-child {
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: 1px solid #E2E8F0;
+        transition: all 0.15s ease;
+    }
+    
+    /* Hide Streamlit default hamburger menu and footer for clean look */
+    #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
 
 # ==========================================
-# APP HEADER
+# HERO / APP BRANDING (LIGHT THEME)
 # ==========================================
-col_h1, col_h2 = st.columns([3, 1])
+col_h1, col_h2 = st.columns([3.5, 1])
+
 with col_h1:
     st.markdown("""
-    <div class="app-nav">
+    <div class="light-hero">
         <div>
-            <div class="app-brand">⚡ Briefly <span style="font-weight: 400; color: #94A3B8;">| Pre-Meeting Briefing Agent</span></div>
-            <div class="app-tagline">Executive 1-page intelligence covering the last 30 days • Every claim verified & sourced</div>
+            <span class="hero-badge">⚡ PRE-MEETING EXECUTIVE INTELLIGENCE</span>
+            <div class="hero-title">Briefly Agent</div>
+            <div class="hero-desc">Generate an executive one-page brief covering the last 30 days of news, hires, and launches — 100% sourced.</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 with col_h2:
-    st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
-    with st.popover("⚙️ Settings & API Keys", use_container_width=True):
-        st.markdown("#### API Configuration")
-        st.caption("Optional: Set keys for customized searches. Works out of the box with built-in search.")
+    st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
+    with st.popover("⚙️ Settings", use_container_width=True):
+        st.markdown("##### Search & Model Settings")
+        st.caption("Optional: Set custom keys. Built-in search works out of the box.")
 
         env_gemini = os.getenv("GEMINI_API_KEY", "")
         env_tavily = os.getenv("TAVILY_API_KEY", "")
@@ -232,13 +267,13 @@ with col_h2:
             "Gemini API Key",
             value=st.session_state.get("cfg_gemini", env_gemini),
             type="password",
-            help="Powers LLM extraction and strategic questions."
+            help="For structured LLM extraction and strategic questions."
         )
         tavily_api_key = st.text_input(
             "Tavily API Key (Optional)",
             value=st.session_state.get("cfg_tavily", env_tavily),
             type="password",
-            help="Leave blank to use zero-config DuckDuckGo search."
+            help="Primary search provider; falls back to DuckDuckGo if blank."
         )
         model_choice = st.selectbox(
             "Gemini Model",
@@ -251,70 +286,66 @@ with col_h2:
         st.session_state["cfg_model"] = model_choice
 
         if gemini_api_key:
-            st.success("Gemini LLM: Connected")
+            st.success("Gemini API: Connected")
         else:
-            st.info("LLM Mode: Fast Semantic Extraction (Active)")
+            st.info("LLM Mode: Fast Semantic Extraction (Zero Setup)")
 
         if tavily_api_key:
-            st.success("Search Engine: Tavily (Connected)")
+            st.success("Search Engine: Tavily")
         else:
-            st.info("Search Engine: DuckDuckGo (Zero-config Fallback)")
+            st.info("Search Engine: DuckDuckGo (Free & Active)")
 
 
-# Load active keys
 active_gemini_key = st.session_state.get("cfg_gemini", os.getenv("GEMINI_API_KEY", ""))
 active_tavily_key = st.session_state.get("cfg_tavily", os.getenv("TAVILY_API_KEY", ""))
 active_model = st.session_state.get("cfg_model", "gemini-2.5-flash")
 
 
 # ==========================================
-# DEMO GALLERY (ZERO SETUP, INSTANT LOAD)
+# 1-CLICK INSTANT DEMO PRESETS
 # ==========================================
 demo_briefs = get_demo_briefs()
 
-st.markdown("""
-<div class="demo-bar">
-    <div class="demo-label">⚡ 1-Click Instant Demos (Explore verified briefs with zero waiting):</div>
-</div>
-""", unsafe_allow_html=True)
+st.markdown("<div style='font-size: 0.82rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;'>⚡ Instant Demos (Zero Waiting • Pre-verified):</div>", unsafe_allow_html=True)
 
 col_d1, col_d2, col_d3, col_d4 = st.columns(4)
 
 with col_d1:
-    if st.button("🏢 Stripe (Fintech)", use_container_width=True):
+    if st.button("🏢 Stripe", use_container_width=True):
         st.session_state["active_brief"] = demo_briefs["Stripe"]
         st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Stripe"])
         st.session_state["active_entity_name"] = "Stripe"
 
 with col_d2:
-    if st.button("🤖 Anthropic (AI Safety)", use_container_width=True):
+    if st.button("🤖 Anthropic", use_container_width=True):
         st.session_state["active_brief"] = demo_briefs["Anthropic"]
         st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Anthropic"])
         st.session_state["active_entity_name"] = "Anthropic"
 
 with col_d3:
-    if st.button("⚡ Jensen Huang (NVIDIA CEO)", use_container_width=True):
+    if st.button("⚡ Jensen Huang (NVIDIA)", use_container_width=True):
         st.session_state["active_brief"] = demo_briefs["Jensen Huang"]
         st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Jensen Huang"])
         st.session_state["active_entity_name"] = "Jensen Huang"
 
 with col_d4:
-    if st.button("🔄 Reset / Clear", use_container_width=True):
-        st.session_state.pop("active_brief", None)
-        st.session_state.pop("active_pdf", None)
+    if st.button("🔄 Reset View", use_container_width=True):
+        st.session_state["active_brief"] = demo_briefs["Stripe"]
+        st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Stripe"])
+        st.session_state["active_entity_name"] = "Stripe"
         st.rerun()
 
 
 # ==========================================
-# SEARCH & GENERATE BAR
+# LIVE SEARCH / BRIEF GENERATOR
 # ==========================================
-st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
 with st.container():
     st.markdown("""
-    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 18px 22px; margin-bottom: 24px;">
-        <div style="font-weight: 600; font-size: 0.95rem; color: #0F172A; margin-bottom: 12px;">
-            🔍 Generate Custom Brief for Any Company or Executive
+    <div class="search-card">
+        <div style="font-weight: 700; font-size: 0.95rem; color: #0F172A; margin-bottom: 12px;">
+            🔍 Research Any Company or Person Live
         </div>
     """, unsafe_allow_html=True)
 
@@ -345,21 +376,21 @@ with st.container():
     with col_s4:
         run_btn = st.button("⚡ Generate Brief", type="primary", use_container_width=True)
 
-    # Date info tag
+    # Scoping tag
     meeting_dt = datetime.combine(m_date, m_time)
     w_start = meeting_dt - timedelta(days=30)
     st.markdown(f"""
         <div style="margin-top: 10px; font-size: 0.8rem; color: #64748B;">
-            🗓️ <b>Meeting:</b> {meeting_dt.strftime('%b %d, %Y at %I:%M %p')} &nbsp;|&nbsp; 
-            ⏳ <b>Scope:</b> Last 30 Days ({w_start.strftime('%b %d')} – {meeting_dt.strftime('%b %d, %Y')}) &nbsp;|&nbsp;
-            🛡️ <b>Guarantee:</b> Zero Hallucinations • 100% Sourced Claims
+            🗓️ <b>Meeting:</b> {meeting_dt.strftime('%b %d, %Y at %I:%M %p')} &nbsp;•&nbsp; 
+            ⏳ <b>Scope:</b> Last 30 Days ({w_start.strftime('%b %d')} – {meeting_dt.strftime('%b %d, %Y')}) &nbsp;•&nbsp;
+            🛡️ <b>Verification:</b> Every fact cited to authentic URL
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 
 # ==========================================
-# LIVE PIPELINE EXECUTION
+# PIPELINE EXECUTION
 # ==========================================
 if run_btn:
     if not entity_query.strip():
@@ -385,7 +416,7 @@ if run_btn:
         )
 
         status_box.update(
-            label=f"Briefing complete for **{entity_query}**! Generated in {len(result.raw_results)} sources.",
+            label=f"✓ Brief complete for **{entity_query}** ({len(result.brief.sources)} sources grounded)",
             state="complete",
             expanded=False
         )
@@ -393,8 +424,6 @@ if run_btn:
         st.session_state["active_brief"] = result.brief
         st.session_state["active_pdf"] = result.pdf_bytes
         st.session_state["active_entity_name"] = result.brief.entity.name
-        st.session_state["active_raw_results"] = result.raw_results
-        st.session_state["active_verified_claims"] = result.verified_claims
 
     except Exception as e:
         status_box.update(label=f"Search failed: {e}", state="error")
@@ -402,32 +431,31 @@ if run_btn:
 
 
 # ==========================================
-# DISPLAY DEFAULT BRIEF ON FIRST LOAD
+# DEFAULT TO STRIPE ON FIRST VISIT
 # ==========================================
 if "active_brief" not in st.session_state:
-    # Default to Stripe so page is NEVER empty or confusing!
     st.session_state["active_brief"] = demo_briefs["Stripe"]
     st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Stripe"])
     st.session_state["active_entity_name"] = "Stripe"
 
 
 # ==========================================
-# RENDER EXECUTIVE ONE-PAGE MEMO VIEW
+# DISPLAY EXECUTIVE MEMO CANVAS
 # ==========================================
 brief: BriefData = st.session_state["active_brief"]
 pdf_bytes: bytes = st.session_state.get("active_pdf", b"")
 entity_name: str = brief.entity.name
 
-# Action Bar
+# Header Actions
 col_a1, col_a2, col_a3 = st.columns([3, 1.2, 1.2])
 
 with col_a1:
     st.markdown(f"### 📋 Executive Brief: {entity_name}")
-    st.caption(f"30-Day Window: {brief.entity.window_display} • Sourced Intelligence Memo")
+    st.caption(f"30-Day Window: {brief.entity.window_display} • Single-Page Memo Format")
 
 with col_a2:
     if pdf_bytes:
-        pdf_name = f"{entity_name.replace(' ', '_')}_PreMeeting_Brief.pdf"
+        pdf_name = f"{entity_name.replace(' ', '_')}_Brief.pdf"
         st.download_button(
             label="📄 Download 1-Page PDF",
             data=pdf_bytes,
@@ -460,91 +488,90 @@ tab_doc, tab_sources, tab_audit = st.tabs([
 with tab_doc:
     st.markdown(f"""
     <div class="memo-paper">
-        <!-- Memo Header -->
+        <!-- Header -->
         <div class="memo-header">
             <div>
-                <span class="memo-category-badge">EXECUTIVE PRE-MEETING INTELLIGENCE MEMO</span>
+                <span class="sec-badge">EXECUTIVE PRE-MEETING INTELLIGENCE MEMO</span>
                 <div class="memo-title">{entity_name}</div>
-                <div style="font-size: 0.88rem; color: #64748B; margin-top: 4px;">
-                    {brief.entity.role_or_industry or ('Company Overview' if brief.entity.entity_type == EntityType.COMPANY else 'Executive Profile')}
+                <div class="memo-sub">
+                    {brief.entity.role_or_industry or ('Corporate Profile' if brief.entity.entity_type == EntityType.COMPANY else 'Executive Profile')}
                 </div>
             </div>
             <div style="text-align: right;">
-                <div class="badge-pill" style="margin-bottom: 6px;">
+                <div class="pill-meeting" style="margin-bottom: 6px;">
                     🗓️ Meeting: {brief.entity.meeting_time.strftime('%b %d, %Y • %I:%M %p')}
                 </div><br>
-                <div class="badge-pill" style="background: #E0F2FE; color: #0284C7; border-color: #BAE6FD;">
+                <div class="pill-window">
                     ⏳ Scope: {brief.entity.window_display}
                 </div>
             </div>
         </div>
         
         <!-- SECTION 1: SNAPSHOT -->
-        <div class="memo-section">
-            <div class="memo-sec-header">01. Snapshot & Identity (2 Lines)</div>
-            <div class="memo-body-text" style="font-size: 1.0rem; font-weight: 500; color: #0F172A; background: #F8FAFC; padding: 12px 16px; border-radius: 6px; border-left: 3px solid #0284C7;">
+        <div style="margin-bottom: 24px;">
+            <div class="sec-badge">01. Snapshot & Identity (2 Lines)</div>
+            <div class="snapshot-box">
                 {brief.snapshot}
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-    # 2-Column Grid for Sections 2, 3, 4, 5
     col_m1, col_m2 = st.columns(2)
 
     with col_m1:
         # SECTION 2: NEWS (30D)
         st.markdown("""
-        <div class="memo-section">
-            <div class="memo-sec-header">02. Material News (Last 30 Days)</div>
+        <div style="margin-bottom: 24px;">
+            <div class="sec-badge">02. Material News (Last 30 Days)</div>
         """, unsafe_allow_html=True)
         for item in brief.news_items:
-            st.markdown(f"<div class='memo-bullet'>• {item}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='memo-bullet'>{item}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
         # SECTION 3: HIRES & DEPARTURES
         st.markdown("""
-        <div class="memo-section">
-            <div class="memo-sec-header">03. Leadership Moves & Departures</div>
+        <div style="margin-bottom: 24px;">
+            <div class="sec-badge">03. Leadership Moves & Departures</div>
         """, unsafe_allow_html=True)
         for item in brief.hires_departures:
-            st.markdown(f"<div class='memo-bullet'>• {item}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='memo-bullet'>{item}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_m2:
         # SECTION 4: LAUNCHES & FUNDING
         st.markdown("""
-        <div class="memo-section">
-            <div class="memo-sec-header">04. Launches, Capital & Partnerships</div>
+        <div style="margin-bottom: 24px;">
+            <div class="sec-badge">04. Launches, Capital & Partnerships</div>
         """, unsafe_allow_html=True)
         for item in brief.launches_funding:
-            st.markdown(f"<div class='memo-bullet'>• {item}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='memo-bullet'>{item}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
         # SECTION 5: OPEN QUESTIONS
         st.markdown("""
-        <div class="memo-section">
-            <div class="memo-sec-header">05. Strategic Questions to Ask in Meeting</div>
+        <div style="margin-bottom: 24px;">
+            <div class="sec-badge">05. Strategic Questions to Ask in Meeting</div>
         """, unsafe_allow_html=True)
         for i, q in enumerate(brief.open_questions, 1):
             st.markdown(f"""
             <div class="question-card">
-                <div class="question-card-title">Q{i}: {q}</div>
+                <b>Q{i}:</b> {q}
             </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     # SECTION 6: SOURCES FOOTER
     st.markdown("""
-        <div class="memo-section" style="margin-top: 18px; border-top: 1px solid #E2E8F0; padding-top: 16px;">
-            <div class="memo-sec-header">06. Grounded Sources (Numbered & Dated)</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.8rem;">
+        <div style="margin-top: 16px; border-top: 1.5px solid #F1F5F9; padding-top: 18px;">
+            <div class="sec-badge">06. Grounded Sources (Numbered & Dated)</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.82rem;">
     """, unsafe_allow_html=True)
 
     for s in brief.sources[:8]:
         d_badge = f"({s.published_date})" if s.published_date else ""
         st.markdown(f"""
-        <div style="background: #F8FAFC; padding: 6px 10px; border-radius: 4px; border: 1px solid #E2E8F0;">
-            <b>[{s.id}]</b> <a href="{s.url}" target="_blank" style="color: #0284C7; text-decoration: none; font-weight: 600;">{s.title[:45]}...</a><br>
+        <div class="source-chip">
+            <b>[{s.id}]</b> <a href="{s.url}" target="_blank" style="color: #2563EB; text-decoration: none; font-weight: 600;">{s.title[:45]}...</a><br>
             <span style="color: #64748B; font-size: 0.75rem;">{s.domain} {d_badge}</span>
         </div>
         """, unsafe_allow_html=True)
@@ -554,8 +581,8 @@ with tab_doc:
         </div>
         
         <!-- Bottom watermark -->
-        <div style="text-align: center; margin-top: 24px; font-size: 0.75rem; color: #94A3B8;">
-            Generated by <b>Briefly</b> • Single-Page Executive Memo • 100% Citation Grounding
+        <div style="text-align: center; margin-top: 28px; font-size: 0.78rem; color: #94A3B8;">
+            Generated by <b>Briefly</b> • Single-Page Executive Briefing • 100% Citation Grounding
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -582,11 +609,11 @@ with tab_sources:
 
 
 # ------------------------------------------
-# TAB 3: GROUNDING & VERIFICATION AUDIT
+# TAB 3: GROUNDING AUDIT
 # ------------------------------------------
 with tab_audit:
     st.markdown("#### 🛡️ Grounding & Anti-Hallucination Audit")
-    st.caption("Transparency inspect for hackathon judging: verify that every claim is grounded and citations are verified.")
+    st.caption("Verification metrics ensuring every claim is sourced from the 30-day window:")
 
     col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
     with col_stat1:

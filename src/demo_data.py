@@ -152,3 +152,4 @@ def get_demo_briefs() -> dict:
         "Anthropic": anthropic_brief,
         "Jensen Huang": jensen_brief
     }
+

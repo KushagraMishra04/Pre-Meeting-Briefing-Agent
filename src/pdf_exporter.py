@@ -1,7 +1,7 @@
 """
 One-Page Executive PDF Exporter.
 Builds a crisp, professional, single-page executive brief using fpdf2.
-Features clickable source hyperlinks, category accent bars, and strict 1-page layout.
+Features a modern light executive theme, clickable hyperlinks, and strict 1-page layout.
 """
 from typing import Optional
 from fpdf import FPDF
@@ -34,7 +34,6 @@ def sanitize_text(text: str) -> str:
     for old, new in replacements.items():
         text = text.replace(old, new)
 
-    # Encode to latin-1 with replacement fallback for any remaining exotic chars
     return text.encode("latin-1", "replace").decode("latin-1")
 
 
@@ -50,15 +49,17 @@ class ExecutiveBriefPDF(FPDF):
 
 
 class PDFExporter:
-    """Renders BriefData into a single-page PDF."""
+    """Renders BriefData into a single-page PDF with a clean, modern light theme."""
 
-    # Executive color palette
+    # Light executive color palette
     COLOR_PRIMARY = (15, 23, 42)       # Slate Navy #0F172A
-    COLOR_ACCENT = (2, 132, 199)       # Deep Sky Blue #0284C7
-    COLOR_TEXT_MAIN = (30, 41, 59)     # Charcoal #1E293B
+    COLOR_ACCENT = (37, 99, 235)       # Royal Blue #2563EB
+    COLOR_TEXT_MAIN = (30, 41, 59)     # Slate #1E293B
     COLOR_TEXT_MUTED = (100, 116, 139) # Gray #64748B
-    COLOR_BG_BOX = (248, 250, 252)     # Light gray #F8FAFC
-    COLOR_LINE = (226, 232, 240)       # Border line #E2E8F0
+    COLOR_HEADER_BG = (239, 246, 255)  # Soft Sky Tint #EFF6FF
+    COLOR_BORDER = (219, 234, 254)     # Soft Blue Border #DBEAFE
+    COLOR_BG_BOX = (248, 250, 252)     # Off-white #F8FAFC
+    COLOR_LINE = (226, 232, 240)       # Light border #E2E8F0
 
     @classmethod
     def render(cls, brief: BriefData) -> bytes:
@@ -66,16 +67,20 @@ class PDFExporter:
         pdf = ExecutiveBriefPDF()
         printable_width = 186.0  # 210 - 24
 
-        # ==========================================
-        # 1. HEADER BANNER
-        # ==========================================
-        pdf.set_fill_color(*cls.COLOR_PRIMARY)
-        pdf.rect(12, 10, printable_width, 22, style="F")
+        # Top Accent Stripe (Royal Blue)
+        pdf.set_fill_color(*cls.COLOR_ACCENT)
+        pdf.rect(12, 10, printable_width, 2.5, style="F")
+
+        # Header Card (Light & Crisp)
+        pdf.set_fill_color(*cls.COLOR_HEADER_BG)
+        pdf.set_draw_color(*cls.COLOR_BORDER)
+        pdf.set_line_width(0.3)
+        pdf.rect(12, 12.5, printable_width, 20, style="DF")
 
         # Top tag
-        pdf.set_xy(16, 12)
+        pdf.set_xy(16, 14.5)
         pdf.set_font("helvetica", "B", 7)
-        pdf.set_text_color(186, 230, 253)  # Soft cyan
+        pdf.set_text_color(*cls.COLOR_ACCENT)
         pdf.cell(
             0, 3,
             sanitize_text("EXECUTIVE PRE-MEETING BRIEF  |  30-DAY INTELLIGENCE"),
@@ -83,27 +88,27 @@ class PDFExporter:
         )
 
         # Entity Title
-        pdf.set_xy(16, 16)
+        pdf.set_xy(16, 18.5)
         pdf.set_font("helvetica", "B", 14)
-        pdf.set_text_color(255, 255, 255)
+        pdf.set_text_color(*cls.COLOR_PRIMARY)
         entity_title = sanitize_text(brief.entity.name)
-        if len(entity_title) > 36:
-            entity_title = entity_title[:33] + "..."
+        if len(entity_title) > 34:
+            entity_title = entity_title[:31] + "..."
         pdf.cell(100, 8, entity_title, new_x=XPos.RIGHT, new_y=YPos.TOP)
 
         # Right-aligned meeting info
-        pdf.set_xy(110, 13)
+        pdf.set_xy(110, 15)
         pdf.set_font("helvetica", "", 7)
-        pdf.set_text_color(226, 232, 240)
+        pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
         mt_str = brief.entity.meeting_time.strftime("%b %d, %Y  %I:%M %p")
         pdf.cell(84, 4, sanitize_text(f"Meeting: {mt_str}"), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-        pdf.set_xy(110, 18)
+        pdf.set_xy(110, 20)
         pdf.set_font("helvetica", "B", 7)
-        pdf.set_text_color(56, 189, 248)  # Bright sky
+        pdf.set_text_color(*cls.COLOR_ACCENT)
         pdf.cell(84, 4, sanitize_text(f"Window: {brief.entity.window_display}"), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-        pdf.set_y(34)
+        pdf.set_y(35.5)
 
         # Helper: Render Section Header
         def draw_section_header(title: str, icon_num: str):
@@ -123,7 +128,7 @@ class PDFExporter:
         # ==========================================
         # SECTION 1: SNAPSHOT (2 lines)
         # ==========================================
-        draw_section_header("1. Snapshot", "01")
+        draw_section_header("1. Snapshot & Identity (2 Lines)", "01")
         pdf.set_font("helvetica", "", 8)
         pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
         clean_snapshot = sanitize_text(brief.snapshot.replace("\n", " "))
@@ -172,17 +177,17 @@ class PDFExporter:
         # ==========================================
         # SECTION 5: OPEN QUESTIONS
         # ==========================================
-        draw_section_header("5. Strategic Open Questions to Ask", "05")
+        draw_section_header("5. Strategic Open Questions to Ask in Meeting", "05")
         q_count = min(len(brief.open_questions), 3)
 
         for i in range(q_count):
             q_text = sanitize_text(brief.open_questions[i])
             pdf.set_font("helvetica", "B", 7.8)
             pdf.set_text_color(*cls.COLOR_ACCENT)
-            pdf.cell(5, 3.8, f"Q{i+1}:", new_x=XPos.RIGHT, new_y=YPos.TOP)
+            pdf.cell(6, 3.8, f"Q{i+1}:", new_x=XPos.RIGHT, new_y=YPos.TOP)
             pdf.set_font("helvetica", "", 7.8)
             pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
-            pdf.multi_cell(printable_width - 5, 3.6, q_text)
+            pdf.multi_cell(printable_width - 6, 3.6, q_text)
             pdf.ln(0.5)
 
         pdf.ln(1.0)
@@ -190,7 +195,7 @@ class PDFExporter:
         # ==========================================
         # SECTION 6: SOURCES (CLICKABLE HYPERLINKS)
         # ==========================================
-        draw_section_header("6. Verified Sources (Numbered & Dated)", "06")
+        draw_section_header("6. Grounded Sources (Numbered & Dated)", "06")
         pdf.set_font("helvetica", "", 7)
 
         max_sources = min(len(brief.sources), 6)
@@ -221,7 +226,7 @@ class PDFExporter:
         pdf.cell(
             printable_width,
             3,
-            sanitize_text("Generated by Pre-Meeting Briefing Agent  |  Every claim grounded in verified sources  |  One-Page Brief"),
+            sanitize_text("Generated by Briefly Agent  |  Every claim grounded in verified sources  |  One-Page Brief"),
             align="C"
         )
 
