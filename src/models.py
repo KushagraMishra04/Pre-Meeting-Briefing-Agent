@@ -74,3 +74,4 @@ class BriefData(BaseModel):
     open_questions: List[str] = Field(default_factory=list)  # 3-5 strategic questions
     sources: List[Source] = Field(default_factory=list)
     stats: Dict[str, Any] = Field(default_factory=dict)
+

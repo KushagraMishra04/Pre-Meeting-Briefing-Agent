@@ -117,3 +117,4 @@ Pre-meeting briefing agent/
 2. **True Single-Page PDF Layout:** Specially tuned margins, typography, and line-height budgeting to guarantee a single-page output.
 3. **Grounding Audit Tab:** A dedicated transparency inspector in Streamlit showing judges the exact raw search results and grounding checks.
 4. **Interactive Demo Presets:** 1-click buttons in the sidebar for popular entities ("Stripe", "Anthropic", "Satya Nadella", "Jensen Huang") for seamless live judging presentations.
+

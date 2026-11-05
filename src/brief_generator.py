@@ -192,3 +192,4 @@ Facts:
             md.append(f"[{s.id}] **{s.title}** ({s.domain}{date_str}) — [{s.url}]({s.url})")
 
         return "\n".join(md)
+

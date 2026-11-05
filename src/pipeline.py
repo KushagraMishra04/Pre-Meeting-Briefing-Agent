@@ -107,3 +107,4 @@ class BriefingPipeline:
             raw_results=raw_results,
             verified_claims=verified_claims
         )
+
