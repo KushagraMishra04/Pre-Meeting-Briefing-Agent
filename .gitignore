@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environment files
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# Output PDFs & temporary files
+*.pdf
+.streamlit/
+
+# OS files
+Thumbs.db
+.DS_Store
