@@ -1,7 +1,7 @@
 """
 Pre-Meeting Briefing Agent - Executive Intelligence Dashboard.
 A fast, beautiful, and grounded briefing tool for high-stakes meetings.
-Clean native light SaaS layout.
+Highlight: Central Executive Search & Generation Engine.
 """
 import os
 import re
@@ -22,7 +22,6 @@ def clean_text(text: str) -> str:
     """Escapes dollar signs so KaTeX doesn't break prose into math formulas."""
     if not text:
         return ""
-    # Escape dollar signs with backslash for markdown
     return re.sub(r'(?<!\\)\$', r'\\$', text)
 
 
@@ -30,14 +29,14 @@ def clean_text(text: str) -> str:
 # PAGE CONFIGURATION
 # ==========================================
 st.set_page_config(
-    page_title="Briefly • Pre-Meeting Briefing Agent",
-    page_icon="📋",
+    page_title="Briefly • Executive Briefing Agent",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
 # ==========================================
-# LIGHT STYLING OVERRIDES
+# MODERN LIGHT SAAS THEME (Highlighted Hero Search)
 # ==========================================
 st.markdown("""
 <style>
@@ -47,19 +46,96 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
     
-    /* Clean light background */
+    /* Main container background */
     .stApp {
         background-color: #F8FAFC;
     }
     
-    /* Button styling */
+    /* THE MAIN HIGHLIGHT: HERO SEARCH CARD */
+    .hero-search-card {
+        background: #FFFFFF;
+        border: 2px solid #3B82F6;
+        border-radius: 16px;
+        padding: 24px 28px;
+        box-shadow: 0 12px 30px -6px rgba(37, 99, 235, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+        margin-bottom: 24px;
+        transition: all 0.2s ease;
+    }
+    .hero-search-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #0F172A;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        letter-spacing: -0.4px;
+        margin-bottom: 4px;
+    }
+    .hero-search-sub {
+        font-size: 0.90rem;
+        color: #64748B;
+        margin-bottom: 16px;
+    }
+    
+    /* Metadata scope pills */
+    .scope-pill-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid #F1F5F9;
+        font-size: 0.82rem;
+        color: #475569;
+    }
+    .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #F1F5F9;
+        color: #334155;
+        font-weight: 600;
+        border: 1px solid #E2E8F0;
+    }
+    .meta-pill-active {
+        background: #EFF6FF;
+        color: #2563EB;
+        border: 1px solid #BFDBFE;
+    }
+    
+    /* Try Chips */
+    .try-chips-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        font-size: 0.82rem;
+        color: #64748B;
+        font-weight: 600;
+    }
+    
+    /* Document header */
+    .doc-action-bar {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    /* Button enhancements */
     div.stButton > button {
         border-radius: 8px;
         font-weight: 600;
         transition: all 0.15s ease;
     }
     
-    /* Hide top Streamlit chrome for a clean application look */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
@@ -67,19 +143,22 @@ st.markdown("""
 
 
 # ==========================================
-# HEADER & APP BRANDING
+# APP TOP BAR
 # ==========================================
-col_h1, col_h2 = st.columns([3.5, 1])
+col_brand, col_cfg = st.columns([4, 1])
 
-with col_h1:
-    st.title("📋 Briefly")
-    st.caption("Executive 1-Page Intelligence Covering the Last 30 Days • Every Claim Verified & Sourced")
+with col_brand:
+    st.markdown("""
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <span style="font-size: 1.6rem; font-weight: 800; color: #0F172A; letter-spacing: -0.5px;">⚡ Briefly</span>
+        <span style="font-size: 0.82rem; font-weight: 700; color: #2563EB; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 3px 8px; border-radius: 6px;">PRE-MEETING AGENT</span>
+    </div>
+    """, unsafe_allow_html=True)
 
-with col_h2:
-    st.write("")
+with col_cfg:
     with st.popover("⚙️ Settings", use_container_width=True):
         st.markdown("##### Configuration")
-        st.caption("Optional: Set custom API keys. DuckDuckGo search is active by default.")
+        st.caption("Optional: Set custom keys. Built-in search is active by default.")
 
         env_gemini = os.getenv("GEMINI_API_KEY", "")
         env_tavily = os.getenv("TAVILY_API_KEY", "")
@@ -121,55 +200,26 @@ active_gemini_key = st.session_state.get("cfg_gemini", os.getenv("GEMINI_API_KEY
 active_tavily_key = st.session_state.get("cfg_tavily", os.getenv("TAVILY_API_KEY", ""))
 active_model = st.session_state.get("cfg_model", "gemini-2.5-flash")
 
-
-# ==========================================
-# 1-CLICK INSTANT DEMO SELECTOR
-# ==========================================
 demo_briefs = get_demo_briefs()
 
-st.markdown("##### ⚡ Instant Demos (0-Second Latency • Ready for Judging)")
-
-col_d1, col_d2, col_d3, col_d4 = st.columns(4)
-
-with col_d1:
-    if st.button("🏢 Stripe", use_container_width=True):
-        st.session_state["active_brief"] = demo_briefs["Stripe"]
-        st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Stripe"])
-        st.session_state["active_entity_name"] = "Stripe"
-
-with col_d2:
-    if st.button("🤖 Anthropic", use_container_width=True):
-        st.session_state["active_brief"] = demo_briefs["Anthropic"]
-        st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Anthropic"])
-        st.session_state["active_entity_name"] = "Anthropic"
-
-with col_d3:
-    if st.button("⚡ Jensen Huang (NVIDIA)", use_container_width=True):
-        st.session_state["active_brief"] = demo_briefs["Jensen Huang"]
-        st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Jensen Huang"])
-        st.session_state["active_entity_name"] = "Jensen Huang"
-
-with col_d4:
-    if st.button("🔄 Reset View", use_container_width=True):
-        st.session_state["active_brief"] = demo_briefs["Stripe"]
-        st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Stripe"])
-        st.session_state["active_entity_name"] = "Stripe"
-        st.rerun()
-
 
 # ==========================================
-# LIVE SEARCH / BRIEF GENERATOR
+# THE MAIN HIGHLIGHT: COMMAND & SEARCH ENGINE
 # ==========================================
-with st.container(border=True):
-    st.markdown("##### 🔍 Research Any Company or Person Live")
+with st.container():
+    st.markdown("""
+    <div class="hero-search-card">
+        <div class="hero-search-title">🔍 Research Any Company or Person Live</div>
+        <div class="hero-search-sub">Enter an entity and meeting time to generate an executive one-page briefing memo covering the last 30 days of news, leadership moves, and product launches — 100% sourced.</div>
+    """, unsafe_allow_html=True)
 
-    col_s1, col_s2, col_s3, col_s4 = st.columns([3, 1.4, 1.2, 1.8])
+    col_s1, col_s2, col_s3, col_s4 = st.columns([3.2, 1.4, 1.1, 1.8])
 
     with col_s1:
         entity_query = st.text_input(
             "Target Entity",
-            value="",
-            placeholder="e.g. OpenAI, Databricks, Satya Nadella, Airbnb...",
+            value=st.session_state.get("query_input_val", ""),
+            placeholder="e.g. Stripe, OpenAI, Anthropic, Databricks, Satya Nadella...",
             label_visibility="collapsed"
         )
 
@@ -190,14 +240,53 @@ with st.container(border=True):
     with col_s4:
         run_btn = st.button("⚡ Generate Brief", type="primary", use_container_width=True)
 
-    # Scoping context line
+    # Scoping context badges
     meeting_dt = datetime.combine(m_date, m_time)
     w_start = meeting_dt - timedelta(days=30)
-    st.caption(
-        f"🗓️ **Meeting Time:** {meeting_dt.strftime('%b %d, %Y at %I:%M %p')} &nbsp;•&nbsp; "
-        f"⏳ **Scope:** Last 30 Days ({w_start.strftime('%b %d')} – {meeting_dt.strftime('%b %d, %Y')}) &nbsp;•&nbsp; "
-        f"🛡️ **Verification:** 100% Sourced Claims"
-    )
+    w_display = f"{w_start.strftime('%b %d')} – {meeting_dt.strftime('%b %d, %Y')}"
+
+    st.markdown(f"""
+        <div class="scope-pill-bar">
+            <span class="meta-pill">🗓️ Meeting: <b>{meeting_dt.strftime('%b %d, %Y at %I:%M %p')}</b></span>
+            <span class="meta-pill meta-pill-active">⏳ 30-Day Window: <b>{w_display}</b></span>
+            <span class="meta-pill">🛡️ Verification: <b>100% Grounded Citations</b></span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Instant Demo Preset Chips (Integrated right inside the main highlight card!)
+    col_chip_lbl, col_c1, col_c2, col_c3, col_c4 = st.columns([1.6, 1.2, 1.2, 1.5, 1.0])
+    with col_chip_lbl:
+        st.markdown("<div style='margin-top: 6px; font-size: 0.82rem; font-weight: 700; color: #64748B;'>⚡ Instant Examples:</div>", unsafe_allow_html=True)
+    with col_c1:
+        if st.button("🏢 Stripe", key="chip_stripe", use_container_width=True):
+            st.session_state["active_brief"] = demo_briefs["Stripe"]
+            st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Stripe"])
+            st.session_state["active_entity_name"] = "Stripe"
+            st.session_state["query_input_val"] = "Stripe"
+            st.rerun()
+    with col_c2:
+        if st.button("🤖 Anthropic", key="chip_anthropic", use_container_width=True):
+            st.session_state["active_brief"] = demo_briefs["Anthropic"]
+            st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Anthropic"])
+            st.session_state["active_entity_name"] = "Anthropic"
+            st.session_state["query_input_val"] = "Anthropic"
+            st.rerun()
+    with col_c3:
+        if st.button("⚡ Jensen Huang", key="chip_jensen", use_container_width=True):
+            st.session_state["active_brief"] = demo_briefs["Jensen Huang"]
+            st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Jensen Huang"])
+            st.session_state["active_entity_name"] = "Jensen Huang"
+            st.session_state["query_input_val"] = "Jensen Huang"
+            st.rerun()
+    with col_c4:
+        if st.button("🔄 Reset", key="chip_reset", use_container_width=True):
+            st.session_state["active_brief"] = demo_briefs["Stripe"]
+            st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Stripe"])
+            st.session_state["active_entity_name"] = "Stripe"
+            st.session_state["query_input_val"] = ""
+            st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ==========================================
@@ -251,22 +340,22 @@ if "active_brief" not in st.session_state:
 
 
 # ==========================================
-# DISPLAY EXECUTIVE MEMO
+# DOCUMENT ACTIONS & MEMO VIEW
 # ==========================================
 brief: BriefData = st.session_state["active_brief"]
 pdf_bytes: bytes = st.session_state.get("active_pdf", b"")
 entity_name: str = brief.entity.name
 
-# Header Actions
-col_a1, col_a2, col_a3 = st.columns([3, 1.2, 1.2])
+# Header Actions Bar
+col_a1, col_a2, col_a3 = st.columns([3.2, 1.4, 1.2])
 
 with col_a1:
     st.markdown(f"### 📋 {entity_name}")
-    st.caption(f"30-Day Window: {brief.entity.window_display} • Single-Page Executive Briefing")
+    st.caption(f"Covering {brief.entity.window_display} • Executive One-Page Brief")
 
 with col_a2:
     if pdf_bytes:
-        pdf_name = f"{entity_name.replace(' ', '_')}_Brief.pdf"
+        pdf_name = f"{entity_name.replace(' ', '_')}_PreMeeting_Brief.pdf"
         st.download_button(
             label="📄 Download 1-Page PDF",
             data=pdf_bytes,
