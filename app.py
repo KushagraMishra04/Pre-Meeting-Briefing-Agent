@@ -250,77 +250,98 @@ st.markdown("""
     }
 
     /* ==========================================
-       HIGH-VISIBILITY SEGMENTED CONTROL TABS
+       HIGH-VISIBILITY CLICKABLE SEGMENTED TAB BUTTONS
        ========================================== */
     div[data-testid="stTabs"] {
         margin-top: 14px !important;
         margin-bottom: 24px !important;
     }
 
-    div[data-baseweb="tab-list"] {
-        background: rgba(255, 255, 255, 0.96) !important;
+    /* Tab List Container Bar */
+    div[data-testid="stTabs"] [role="tablist"],
+    div[data-testid="stTabs"] > div:first-child,
+    .stTabs [role="tablist"] {
+        background: rgba(255, 255, 255, 0.95) !important;
         border: 2px solid #FDBA74 !important;
         border-radius: 16px !important;
-        padding: 6px 8px !important;
-        gap: 6px !important;
+        padding: 8px 10px !important;
+        gap: 8px !important;
         box-shadow: 0 6px 20px rgba(251, 146, 60, 0.14) !important;
         display: flex !important;
         flex-wrap: wrap !important;
         align-items: center !important;
     }
 
+    /* Individual Tab Buttons - Clear, Clickable Pill Style */
+    div[data-testid="stTabs"] button,
+    div[data-testid="stTabs"] [role="tab"],
+    div[data-testid="stTab"],
     button[data-baseweb="tab"] {
-        background: transparent !important;
-        border: 1.5px solid transparent !important;
+        background: #FFFBF7 !important;
+        border: 1.5px solid #FED7AA !important;
         border-radius: 12px !important;
         padding: 10px 18px !important;
         font-weight: 700 !important;
-        font-size: 0.95rem !important;
+        font-size: 0.94rem !important;
         color: #7C2D12 !important;
-        transition: all 0.18s ease-in-out !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
         cursor: pointer !important;
+        transition: all 0.18s ease-in-out !important;
+        margin: 2px !important;
     }
 
-    button[data-baseweb="tab"] div[data-testid="stMarkdownContainer"] p,
-    button[data-baseweb="tab"] p,
-    button[data-baseweb="tab"] span {
+    div[data-testid="stTabs"] button p,
+    div[data-testid="stTabs"] button span,
+    div[data-testid="stTab"] p,
+    div[data-testid="stTab"] span,
+    div[data-testid="stTab"] div {
         color: #7C2D12 !important;
         font-weight: 700 !important;
-        font-size: 0.95rem !important;
+        font-size: 0.94rem !important;
     }
 
-    button[data-baseweb="tab"]:hover {
-        background: #FFF7ED !important;
-        border-color: #FED7AA !important;
-        transform: translateY(-1px) !important;
+    /* Hover Elevation: Clearly indicates it is clickable! */
+    div[data-testid="stTabs"] button:hover,
+    div[data-testid="stTabs"] [role="tab"]:hover,
+    div[data-testid="stTab"]:hover {
+        background: #FFEDD5 !important;
+        border-color: #FB923C !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 14px rgba(251, 146, 60, 0.22) !important;
     }
 
-    button[data-baseweb="tab"]:hover div[data-testid="stMarkdownContainer"] p,
-    button[data-baseweb="tab"]:hover p,
-    button[data-baseweb="tab"]:hover span {
-        color: #EA580C !important;
+    div[data-testid="stTabs"] button:hover p,
+    div[data-testid="stTabs"] button:hover span,
+    div[data-testid="stTab"]:hover p,
+    div[data-testid="stTab"]:hover span {
+        color: #C2410C !important;
     }
 
-    /* Active Selected Tab: Solid Radiant Light Orange Pill */
-    button[data-baseweb="tab"][aria-selected="true"] {
+    /* Active Selected Tab: Solid Radiant Light Orange Clickable Button */
+    div[data-testid="stTabs"] button[aria-selected="true"],
+    div[data-testid="stTabs"] [role="tab"][aria-selected="true"],
+    div[data-testid="stTab"][aria-selected="true"] {
         background: linear-gradient(135deg, #FFA053 0%, #FB8231 100%) !important;
         border: 1.5px solid #FA7C2B !important;
-        box-shadow: 0 4px 14px rgba(251, 130, 49, 0.35) !important;
-        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 16px rgba(251, 130, 49, 0.40) !important;
+        transform: translateY(-2px) !important;
     }
 
-    button[data-baseweb="tab"][aria-selected="true"] div[data-testid="stMarkdownContainer"] p,
-    button[data-baseweb="tab"][aria-selected="true"] p,
-    button[data-baseweb="tab"][aria-selected="true"] span {
+    div[data-testid="stTabs"] button[aria-selected="true"] p,
+    div[data-testid="stTabs"] button[aria-selected="true"] span,
+    div[data-testid="stTab"][aria-selected="true"] p,
+    div[data-testid="stTab"][aria-selected="true"] span {
         color: #FFFFFF !important;
         font-weight: 800 !important;
         text-shadow: 0 1px 2px rgba(124, 45, 18, 0.45) !important;
     }
 
-    /* Remove default thin grey underline */
+    /* Remove default thin underline/border elements */
+    div[data-testid="stTabs"] hr,
     div[data-baseweb="tab-highlight"],
     div[data-baseweb="tab-border"] {
         display: none !important;
+        height: 0 !important;
     }
     
     /* Hide default chrome */
