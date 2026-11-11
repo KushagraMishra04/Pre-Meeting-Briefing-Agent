@@ -1,7 +1,17 @@
 """
 Pre-Meeting Briefing Agent - Executive Intelligence Dashboard.
-A fast, beautiful, and grounded briefing tool for high-stakes meetings.
-Highlight: Central Executive Search & Generation Engine.
+A comprehensive, trust-audited intelligence agent for high-stakes meetings.
+Features:
+- Attendee-Aware Intelligence (Profiles, Tenure, Activity, Privacy Guardrail)
+- Tone Modes: Executive (5 Bullets), Standard, Deep-Dive
+- Click-to-Evidence Grounding with Verbatim Quotes
+- Goal-Aware Strategic Questions
+- Hallucination Audit Panel (Verified, Dropped Claims, Reasons)
+- Ask-The-Brief Grounded Chat with Citations
+- Since-Last-Brief Recurring Meeting Diff
+- Calendar Auto-Trigger & .ICS Invite Parser
+- Post-Meeting Action Items & Executive Follow-Up Email Generator
+- Trust & Safety (Freshness, Confirmed vs Rumor, Conflict Detector)
 """
 import os
 import re
@@ -11,11 +21,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from src.models import EntityType, BriefData
+from src.models import EntityType, BriefData, ToneMode, AttendeeProfile
 from src.pipeline import BriefingPipeline, PipelineResult
 from src.brief_generator import BriefGenerator
 from src.pdf_exporter import PDFExporter
 from src.demo_data import get_demo_briefs
+from src.calendar_parser import CalendarParser
+from src.ask_brief import AskBriefEngine
+from src.post_meeting import PostMeetingEngine
+from src.diff_engine import DiffEngine
 
 
 def clean_text(text: str) -> str:
@@ -29,14 +43,14 @@ def clean_text(text: str) -> str:
 # PAGE CONFIGURATION
 # ==========================================
 st.set_page_config(
-    page_title="Briefly • Executive Briefing Agent",
+    page_title="Briefly • Pre-Meeting Executive Agent",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
 # ==========================================
-# MODERN LIGHT SAAS THEME (Highlighted Hero Search)
+# MODERN LIGHT SAAS STYLING
 # ==========================================
 st.markdown("""
 <style>
@@ -46,20 +60,18 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
     
-    /* Main container background */
     .stApp {
         background-color: #F8FAFC;
     }
     
-    /* THE MAIN HIGHLIGHT: HERO SEARCH CARD */
+    /* THE MAIN HIGHLIGHT HERO CARD */
     .hero-search-card {
         background: #FFFFFF;
         border: 2px solid #3B82F6;
         border-radius: 16px;
         padding: 24px 28px;
-        box-shadow: 0 12px 30px -6px rgba(37, 99, 235, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.10), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
         margin-bottom: 24px;
-        transition: all 0.2s ease;
     }
     .hero-search-title {
         font-size: 1.35rem;
@@ -77,7 +89,7 @@ st.markdown("""
         margin-bottom: 16px;
     }
     
-    /* Metadata scope pills */
+    /* Scope pills */
     .scope-pill-bar {
         display: flex;
         flex-wrap: wrap;
@@ -106,27 +118,26 @@ st.markdown("""
         border: 1px solid #BFDBFE;
     }
     
-    /* Try Chips */
-    .try-chips-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 12px;
-        font-size: 0.82rem;
-        color: #64748B;
-        font-weight: 600;
+    /* Audit Panel Container */
+    .audit-card {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-left: 4px solid #16A34A;
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-top: 20px;
     }
     
-    /* Document header */
-    .doc-action-bar {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+    /* Evidence Quote Drawer */
+    .quote-box {
+        background: #F1F5F9;
+        border-left: 3px solid #3B82F6;
+        padding: 8px 12px;
+        border-radius: 0 6px 6px 0;
+        font-size: 0.82rem;
+        color: #334155;
+        margin: 4px 0 8px 14px;
+        font-style: italic;
     }
     
     /* Button enhancements */
@@ -143,7 +154,7 @@ st.markdown("""
 
 
 # ==========================================
-# APP TOP BAR
+# APP TOP BAR & SETTINGS
 # ==========================================
 col_brand, col_cfg = st.columns([4, 1])
 
@@ -151,14 +162,15 @@ with col_brand:
     st.markdown("""
     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
         <span style="font-size: 1.6rem; font-weight: 800; color: #0F172A; letter-spacing: -0.5px;">⚡ Briefly</span>
-        <span style="font-size: 0.82rem; font-weight: 700; color: #2563EB; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 3px 8px; border-radius: 6px;">PRE-MEETING AGENT</span>
+        <span style="font-size: 0.80rem; font-weight: 700; color: #2563EB; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 3px 8px; border-radius: 6px;">PRE-MEETING AGENT</span>
+        <span style="font-size: 0.80rem; font-weight: 700; color: #16A34A; background: #F0FDF4; border: 1px solid #BBF7D0; padding: 3px 8px; border-radius: 6px;">TRUST & SAFETY AUDITED</span>
     </div>
     """, unsafe_allow_html=True)
 
 with col_cfg:
     with st.popover("⚙️ Settings", use_container_width=True):
         st.markdown("##### Configuration")
-        st.caption("Optional: Set custom keys. Built-in search is active by default.")
+        st.caption("Optional API keys. Built-in search works out of the box.")
 
         env_gemini = os.getenv("GEMINI_API_KEY", "")
         env_tavily = os.getenv("TAVILY_API_KEY", "")
@@ -167,7 +179,7 @@ with col_cfg:
             "Gemini API Key",
             value=st.session_state.get("cfg_gemini", env_gemini),
             type="password",
-            help="For structured LLM extraction and strategic questions."
+            help="Powers LLM extraction, questions, and post-meeting follow-ups."
         )
         tavily_api_key = st.text_input(
             "Tavily API Key (Optional)",
@@ -188,7 +200,7 @@ with col_cfg:
         if gemini_api_key:
             st.success("Gemini API: Connected")
         else:
-            st.info("LLM Mode: Semantic Extraction (Zero Setup)")
+            st.info("LLM Mode: Semantic Fallback (Active)")
 
         if tavily_api_key:
             st.success("Search Engine: Tavily")
@@ -201,6 +213,7 @@ active_tavily_key = st.session_state.get("cfg_tavily", os.getenv("TAVILY_API_KEY
 active_model = st.session_state.get("cfg_model", "gemini-2.5-flash")
 
 demo_briefs = get_demo_briefs()
+sample_invites = CalendarParser.get_sample_invites()
 
 
 # ==========================================
@@ -209,38 +222,96 @@ demo_briefs = get_demo_briefs()
 with st.container():
     st.markdown("""
     <div class="hero-search-card">
-        <div class="hero-search-title">🔍 Research Any Company or Person Live</div>
-        <div class="hero-search-sub">Enter an entity and meeting time to generate an executive one-page briefing memo covering the last 30 days of news, leadership moves, and product launches — 100% sourced.</div>
+        <div class="hero-search-title">🔍 Research Any Company, Attendee or Meeting Live</div>
+        <div class="hero-search-sub">Generate attendee profiles, 30-day verified intelligence, and goal-aware strategic questions with 100% click-to-evidence grounding.</div>
     """, unsafe_allow_html=True)
 
-    col_s1, col_s2, col_s3, col_s4 = st.columns([3.2, 1.4, 1.1, 1.8])
+    # Row 1: Target Entity, Date, Time, Action Button
+    col_s1, col_s2, col_s3, col_s4 = st.columns([3.0, 1.4, 1.1, 1.8])
 
     with col_s1:
         entity_query = st.text_input(
             "Target Entity",
             value=st.session_state.get("query_input_val", ""),
-            placeholder="e.g. Stripe, OpenAI, Anthropic, Databricks, Satya Nadella...",
+            placeholder="e.g. Stripe, Anthropic, Databricks, Satya Nadella...",
             label_visibility="collapsed"
         )
 
     with col_s2:
         m_date = st.date_input(
             "Meeting Date",
-            value=datetime.now() + timedelta(days=1),
+            value=st.session_state.get("meeting_date_val", datetime.now() + timedelta(days=1)),
             label_visibility="collapsed"
         )
 
     with col_s3:
         m_time = st.time_input(
             "Meeting Time",
-            value=time(10, 0),
+            value=st.session_state.get("meeting_time_val", time(10, 0)),
             label_visibility="collapsed"
         )
 
     with col_s4:
         run_btn = st.button("⚡ Generate Brief", type="primary", use_container_width=True)
 
-    # Scoping context badges
+    # Row 2: Meeting Goal & Attendee Input
+    col_g1, col_g2 = st.columns([2.5, 2.5])
+    with col_g1:
+        meeting_goal_input = st.text_input(
+            "🎯 Meeting Objective / Goal (Optional)",
+            value=st.session_state.get("goal_input_val", ""),
+            placeholder="e.g. Negotiate enterprise volume tiers for agentic checkout protocol"
+        )
+    with col_g2:
+        attendees_input = st.text_input(
+            "👥 Key Attendees / Participants (Optional, comma-separated)",
+            value=st.session_state.get("attendees_input_val", ""),
+            placeholder="e.g. Patrick Collison, Will Gaybrick"
+        )
+
+    # Row 3: Brief Tone & Format Toggles
+    col_mode, col_blank = st.columns([3.5, 1.5])
+    with col_mode:
+        tone_choice = st.radio(
+            "Format & Tone Toggle",
+            options=[
+                ToneMode.EXECUTIVE.value,
+                ToneMode.STANDARD.value,
+                ToneMode.DEEP_DIVE.value
+            ],
+            index=1,
+            horizontal=True
+        )
+
+    # Selected tone mapping
+    selected_tone = ToneMode.STANDARD
+    if "Executive" in tone_choice:
+        selected_tone = ToneMode.EXECUTIVE
+    elif "Deep-Dive" in tone_choice:
+        selected_tone = ToneMode.DEEP_DIVE
+
+    # Calendar Invite Parser Expander (Auto-Trigger Feature)
+    with st.expander("📅 Import / Auto-Trigger from Calendar Invite (.ics or text)", expanded=False):
+        st.caption("Paste meeting invite text or choose a preset to automatically extract date, attendees, and goal:")
+        col_c_sel, col_c_btn = st.columns([3, 1])
+        with col_c_sel:
+            chosen_invite_key = st.selectbox("Sample Calendar Invites", options=list(sample_invites.keys()))
+        with col_c_btn:
+            st.write("")
+            load_cal_btn = st.button("Apply Calendar Invite", use_container_width=True)
+
+        if load_cal_btn:
+            raw_ics = sample_invites[chosen_invite_key]
+            parsed = CalendarParser.parse_ics(raw_ics) if "BEGIN:VCALENDAR" in raw_ics else CalendarParser.parse_plain_text(raw_ics)
+            st.session_state["query_input_val"] = chosen_invite_key.split()[0]
+            st.session_state["goal_input_val"] = parsed.goal_agenda
+            st.session_state["attendees_input_val"] = ", ".join(parsed.attendees)
+            st.session_state["meeting_date_val"] = parsed.meeting_time.date()
+            st.session_state["meeting_time_val"] = parsed.meeting_time.time()
+            st.success(f"✓ Parsed invite for '{parsed.title}' with {len(parsed.attendees)} attendees!")
+            st.rerun()
+
+    # Scope Pills
     meeting_dt = datetime.combine(m_date, m_time)
     w_start = meeting_dt - timedelta(days=30)
     w_display = f"{w_start.strftime('%b %d')} – {meeting_dt.strftime('%b %d, %Y')}"
@@ -249,14 +320,15 @@ with st.container():
         <div class="scope-pill-bar">
             <span class="meta-pill">🗓️ Meeting: <b>{meeting_dt.strftime('%b %d, %Y at %I:%M %p')}</b></span>
             <span class="meta-pill meta-pill-active">⏳ 30-Day Window: <b>{w_display}</b></span>
-            <span class="meta-pill">🛡️ Verification: <b>100% Grounded Citations</b></span>
+            <span class="meta-pill">🛡️ Verification: <b>100% Grounded Quotes</b></span>
+            <span class="meta-pill">🔒 Privacy: <b>Professional Data Only</b></span>
         </div>
     """, unsafe_allow_html=True)
 
-    # Instant Demo Preset Chips (Integrated right inside the main highlight card!)
-    col_chip_lbl, col_c1, col_c2, col_c3, col_c4 = st.columns([1.6, 1.2, 1.2, 1.5, 1.0])
+    # Instant Demo Preset Chips
+    col_chip_lbl, col_c1, col_c2, col_c3, col_c4 = st.columns([1.6, 1.4, 1.6, 1.8, 1.0])
     with col_chip_lbl:
-        st.markdown("<div style='margin-top: 6px; font-size: 0.82rem; font-weight: 700; color: #64748B;'>⚡ Instant Examples:</div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 6px; font-size: 0.82rem; font-weight: 700; color: #64748B;'>⚡ Instant Demos:</div>", unsafe_allow_html=True)
     with col_c1:
         if st.button("🏢 Stripe", key="chip_stripe", use_container_width=True):
             st.session_state["active_brief"] = demo_briefs["Stripe"]
@@ -265,18 +337,18 @@ with st.container():
             st.session_state["query_input_val"] = "Stripe"
             st.rerun()
     with col_c2:
-        if st.button("🤖 Anthropic", key="chip_anthropic", use_container_width=True):
+        if st.button("🤖 Anthropic (Deep-Dive)", key="chip_anthropic", use_container_width=True):
             st.session_state["active_brief"] = demo_briefs["Anthropic"]
             st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Anthropic"])
             st.session_state["active_entity_name"] = "Anthropic"
             st.session_state["query_input_val"] = "Anthropic"
             st.rerun()
     with col_c3:
-        if st.button("⚡ Jensen Huang", key="chip_jensen", use_container_width=True):
-            st.session_state["active_brief"] = demo_briefs["Jensen Huang"]
-            st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Jensen Huang"])
-            st.session_state["active_entity_name"] = "Jensen Huang"
-            st.session_state["query_input_val"] = "Jensen Huang"
+        if st.button("🏥 Acme Health (Quiet Entity)", key="chip_acme", use_container_width=True):
+            st.session_state["active_brief"] = demo_briefs["Acme Health (Quiet Entity)"]
+            st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Acme Health (Quiet Entity)"])
+            st.session_state["active_entity_name"] = "Acme Health Tech"
+            st.session_state["query_input_val"] = "Acme Health Tech"
             st.rerun()
     with col_c4:
         if st.button("🔄 Reset", key="chip_reset", use_container_width=True):
@@ -284,6 +356,8 @@ with st.container():
             st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Stripe"])
             st.session_state["active_entity_name"] = "Stripe"
             st.session_state["query_input_val"] = ""
+            st.session_state["goal_input_val"] = ""
+            st.session_state["attendees_input_val"] = ""
             st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -294,7 +368,7 @@ with st.container():
 # ==========================================
 if run_btn:
     if not entity_query.strip():
-        st.warning("Please enter a company or person name.")
+        st.warning("Please enter a company, person, or meeting title.")
         st.stop()
 
     status_box = st.status(f"Investigating **{entity_query}** across the last 30 days...", expanded=True)
@@ -309,14 +383,19 @@ if run_btn:
         def progress_tracker(message: str, pct: float):
             status_box.write(f"• {message}")
 
+        parsed_attendees = [a.strip() for a in attendees_input.split(",") if a.strip()]
+
         result: PipelineResult = pipeline.run(
             entity_name=entity_query,
             meeting_time=meeting_dt,
+            meeting_goal=meeting_goal_input.strip() or None,
+            tone_mode=selected_tone,
+            attendee_names=parsed_attendees,
             on_progress=progress_tracker
         )
 
         status_box.update(
-            label=f"✓ Brief complete for **{entity_query}** ({len(result.brief.sources)} sources grounded)",
+            label=f"✓ Brief complete for **{entity_query}** ({len(result.brief.sources)} sources grounded • Trust audited)",
             state="complete",
             expanded=False
         )
@@ -340,24 +419,23 @@ if "active_brief" not in st.session_state:
 
 
 # ==========================================
-# DOCUMENT ACTIONS & MEMO VIEW
+# ACTIVE BRIEF & ACTION BAR
 # ==========================================
 brief: BriefData = st.session_state["active_brief"]
 pdf_bytes: bytes = st.session_state.get("active_pdf", b"")
 entity_name: str = brief.entity.name
 
-# Header Actions Bar
 col_a1, col_a2, col_a3 = st.columns([3.2, 1.4, 1.2])
 
 with col_a1:
     st.markdown(f"### 📋 {entity_name}")
-    st.caption(f"Covering {brief.entity.window_display} • Executive One-Page Brief")
+    st.caption(f"Mode: **{brief.tone_mode.value}** • Window: {brief.entity.window_display} • Goal: {brief.meeting_goal or 'Executive Alignment'}")
 
 with col_a2:
     if pdf_bytes:
-        pdf_name = f"{entity_name.replace(' ', '_')}_PreMeeting_Brief.pdf"
+        pdf_name = f"{entity_name.replace(' ', '_')}_{brief.tone_mode.name}_Brief.pdf"
         st.download_button(
-            label="📄 Download 1-Page PDF",
+            label="📄 Download Executive PDF",
             data=pdf_bytes,
             file_name=pdf_name,
             mime="application/pdf",
@@ -376,24 +454,30 @@ with col_a3:
     )
 
 # Document Tabs
-tab_doc, tab_sources, tab_audit = st.tabs([
-    "📄 Executive One-Page Memo",
-    "🔗 Sourced Citations Vault",
-    "🔍 Grounding & Verification Audit"
+tab_brief, tab_chat, tab_diff, tab_post, tab_vault, tab_audit = st.tabs([
+    "📄 Executive Brief",
+    "💬 Ask-The-Brief (Q&A)",
+    "🔄 Since Last Brief (Diff)",
+    "📝 Post-Meeting Follow-Up",
+    "🔗 Sourced Evidence Vault",
+    "🛡️ Hallucination Audit Panel"
 ])
 
+
 # ------------------------------------------
-# TAB 1: THE EXECUTIVE MEMO CANVAS
+# TAB 1: EXECUTIVE BRIEF
 # ------------------------------------------
-with tab_doc:
+with tab_brief:
     with st.container(border=True):
-        # Header banner inside memo
         col_m_l, col_m_r = st.columns([3, 2])
         with col_m_l:
-            st.caption(":blue[**EXECUTIVE PRE-MEETING BRIEF  •  30-DAY INTELLIGENCE**]")
+            st.caption(f":blue[**EXECUTIVE BRIEF  •  {brief.tone_mode.name}  •  30-DAY INTELLIGENCE**]")
             st.title(entity_name)
             if brief.entity.role_or_industry:
                 st.markdown(f"**{clean_text(brief.entity.role_or_industry)}**")
+            if brief.meeting_goal:
+                st.markdown(f"🎯 **Objective:** *{clean_text(brief.meeting_goal)}*")
+
         with col_m_r:
             st.info(
                 f"🗓️ **Meeting:** {brief.entity.meeting_time.strftime('%b %d, %Y • %I:%M %p')}\n\n"
@@ -402,96 +486,292 @@ with tab_doc:
 
         st.divider()
 
-        # SECTION 1: SNAPSHOT
-        st.markdown("##### 01. Snapshot & Identity (2 Lines)")
-        st.info(clean_text(brief.snapshot))
+        # Attendee Profiles if present
+        if brief.attendees:
+            st.markdown("##### 👥 Attendee Profiles (Privacy-Compliant)")
+            att_cols = st.columns(min(len(brief.attendees), 3))
+            for idx, att in enumerate(brief.attendees[:3]):
+                with att_cols[idx]:
+                    with st.container(border=True):
+                        st.markdown(f"**{clean_text(att.name)}**")
+                        st.caption(f"{clean_text(att.role_title)} • {clean_text(att.organization_tenure)}")
+                        if att.is_quiet_entity:
+                            st.info("Nothing notable in the last 30 days.")
+                        else:
+                            st.markdown(f"**Recent Activity:** {clean_text(att.recent_activity)}")
+                            st.caption(f"Shared Context: {clean_text(att.shared_interests)}")
+            st.divider()
 
-        # 2-Column Split for Sections 2, 3, 4, 5
-        col_c1, col_c2 = st.columns(2)
+        # EXECUTIVE MODE: Exactly 5 strategic bullets
+        if brief.tone_mode == ToneMode.EXECUTIVE:
+            st.markdown("##### ⚡ Executive Strategic Briefing (5 Decision Bullets)")
+            for i, bullet in enumerate(brief.executive_bullets, 1):
+                st.success(f"**{i}.** {clean_text(bullet)}")
+            st.divider()
 
-        with col_c1:
-            # SECTION 2: NEWS (30D)
-            st.markdown("##### 02. Material News (Last 30 Days)")
-            with st.container(border=True):
-                for item in brief.news_items:
-                    st.markdown(f"- {clean_text(item)}")
+        # STANDARD & DEEP-DIVE MODE
+        else:
+            # Section 1: Snapshot
+            st.markdown("##### 01. Snapshot & Identity (2 Lines)")
+            st.info(clean_text(brief.snapshot))
 
-            # SECTION 3: HIRES & DEPARTURES
-            st.markdown("##### 03. Leadership Moves & Departures")
-            with st.container(border=True):
-                for item in brief.hires_departures:
-                    st.markdown(f"- {clean_text(item)}")
+            if brief.quiet_entity_note:
+                st.warning(f"ℹ️ **Quiet-Entity Notice:** {brief.quiet_entity_note}")
 
-        with col_c2:
-            # SECTION 4: LAUNCHES & FUNDING
-            st.markdown("##### 04. Launches, Capital & Partnerships")
-            with st.container(border=True):
-                for item in brief.launches_funding:
-                    st.markdown(f"- {clean_text(item)}")
+            col_c1, col_c2 = st.columns(2)
 
-            # SECTION 5: OPEN QUESTIONS
-            st.markdown("##### 05. Strategic Questions to Ask in Meeting")
-            for i, q in enumerate(brief.open_questions, 1):
-                st.success(f"**Q{i}:** {clean_text(q)}")
+            with col_c1:
+                # News with Click-to-Evidence
+                st.markdown("##### 02. Material News (Last 30 Days)")
+                with st.container(border=True):
+                    if brief.news_items:
+                        for item in brief.news_items:
+                            status_badge = f":blue[[{item.evidence.status.value}]]" if item.evidence else ""
+                            fresh_badge = f"*{item.evidence.freshness}*" if item.evidence else ""
+                            st.markdown(f"- {clean_text(item.statement)} **{item.citation_tag}** {status_badge} • {fresh_badge}")
+                            if item.evidence and item.evidence.verbatim_quote:
+                                with st.expander(f"🔍 Click to Evidence {item.citation_tag}", expanded=False):
+                                    st.markdown(f"**Verbatim Source Quote:**\n> \"{clean_text(item.evidence.verbatim_quote)}\"")
+                                    st.caption(f"Source: [{clean_text(item.evidence.source_title)}]({item.evidence.source_url})")
+                    else:
+                        st.write("Nothing notable in the last 30 days.")
 
-        # SECTION 6: SOURCES FOOTER
+                # Hires & Departures
+                st.markdown("##### 03. Leadership Moves & Departures")
+                with st.container(border=True):
+                    if brief.hires_departures:
+                        for item in brief.hires_departures:
+                            st.markdown(f"- {clean_text(item.statement)} **{item.citation_tag}**")
+                            if item.evidence and item.evidence.verbatim_quote:
+                                with st.expander(f"🔍 Click to Evidence {item.citation_tag}", expanded=False):
+                                    st.markdown(f"**Verbatim Source Quote:**\n> \"{clean_text(item.evidence.verbatim_quote)}\"")
+                    else:
+                        st.write("Nothing notable in the last 30 days.")
+
+            with col_c2:
+                # Launches & Funding
+                st.markdown("##### 04. Launches, Capital & Partnerships")
+                with st.container(border=True):
+                    if brief.launches_funding:
+                        for item in brief.launches_funding:
+                            conflict_tag = " :red[⚠️ CONFLICT DETECTED]" if item.conflict_detected else ""
+                            st.markdown(f"- {clean_text(item.statement)} **{item.citation_tag}**{conflict_tag}")
+                            if item.evidence and item.evidence.verbatim_quote:
+                                with st.expander(f"🔍 Click to Evidence {item.citation_tag}", expanded=False):
+                                    st.markdown(f"**Verbatim Source Quote:**\n> \"{clean_text(item.evidence.verbatim_quote)}\"")
+                                    if item.evidence.conflict_note:
+                                        st.error(f"Flagged Discrepancy: {item.evidence.conflict_note}")
+                    else:
+                        st.write("Nothing notable in the last 30 days.")
+
+                # Deep-Dive debates if selected
+                if brief.tone_mode == ToneMode.DEEP_DIVE and brief.deep_dive_context:
+                    st.markdown("##### 🔬 Strategic Debates & Outcomes")
+                    with st.container(border=True):
+                        st.markdown(f"*{clean_text(brief.deep_dive_context.get('historical_context', ''))}*")
+                        st.markdown("**Key Strategic Debates:**")
+                        for d in brief.deep_dive_context.get("key_debates", []):
+                            st.markdown(f"- {clean_text(d)}")
+
+        # Goal-Aware Questions
+        st.markdown("##### 05. Goal-Aware Strategic Questions")
+        for i, q in enumerate(brief.goal_aware_questions, 1):
+            st.success(f"**Q{i}:** {clean_text(q)}")
+
+        # Grounded Sources
         st.markdown("##### 06. Grounded Sources (Numbered & Dated)")
         s_cols = st.columns(2)
         for idx, s in enumerate(brief.sources[:8]):
             target_col = s_cols[idx % 2]
             with target_col:
-                d_str = f" • *{s.published_date}*" if s.published_date else ""
                 with st.container(border=True):
                     st.markdown(f"**[{s.id}] [{clean_text(s.title[:45])}...]({s.url})**")
-                    st.caption(f"`{s.domain}`{d_str}")
+                    st.caption(f"`{s.domain}` • Freshness: *{s.freshness}*")
 
+        # In-Brief Hallucination Audit Panel
         st.markdown("---")
-        st.caption(
-            "Generated by **Briefly Agent** • Guaranteed Single-Page Brief • 100% Citation Grounding"
+        st.markdown("""
+        <div class="audit-card">
+            <div style="font-weight: 700; color: #166534; font-size: 0.95rem; margin-bottom: 6px;">
+                🛡️ Hallucination Audit Panel
+            </div>
+        """, unsafe_allow_html=True)
+        col_au1, col_au2, col_au3 = st.columns(3)
+        with col_au1:
+            st.metric("Total Claims Verified", brief.audit_panel.total_claims_verified)
+        with col_au2:
+            st.metric("Dropped Claims", brief.audit_panel.dropped_claims_count)
+        with col_au3:
+            st.metric("Privacy Filters", brief.audit_panel.privacy_filtered_count)
+
+        if brief.audit_panel.dropped_claims:
+            st.markdown("**Drop Reason(s):**")
+            for dc in brief.audit_panel.dropped_claims:
+                st.caption(f"• **{dc.drop_reason}**: *\"{clean_text(dc.statement)}\"*")
+        else:
+            st.caption("• **Drop Reason(s):** None (Zero hallucinations; 100% of claims grounded in verified quotes).")
+
+        if brief.audit_panel.conflicts_detected:
+            st.warning("⚠️ **Flagged Source Discrepancies:** " + " | ".join(brief.audit_panel.conflicts_detected))
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+# ------------------------------------------
+# TAB 2: ASK-THE-BRIEF (GROUNDED CHAT)
+# ------------------------------------------
+with tab_chat:
+    st.markdown("#### 💬 Ask-The-Brief (Grounded Conversational Q&A)")
+    st.caption("Ask questions about this meeting, attendees, or recent developments. Every response is strictly cited with sources.")
+
+    sample_questions = [
+        f"What are the biggest operational risks for {entity_name}?",
+        f"What recent product launch occurred in the last 30 days?",
+        f"What should I specifically ask the attendees in this meeting?",
+        f"What are their primary revenue drivers?"
+    ]
+    st.markdown("**Suggested Questions:**")
+    col_q1, col_q2 = st.columns(2)
+    for idx, sq in enumerate(sample_questions):
+        target = col_q1 if idx % 2 == 0 else col_q2
+        if target.button(sq, key=f"sq_{idx}", use_container_width=True):
+            st.session_state["user_chat_input"] = sq
+
+    user_query = st.text_input(
+        "Ask a question about the brief:",
+        value=st.session_state.get("user_chat_input", ""),
+        placeholder=f"e.g. Has {entity_name} announced any funding recently?"
+    )
+
+    if st.button("Submit Question", type="primary", use_container_width=False) or user_query:
+        if user_query:
+            with st.spinner("Searching verified brief context..."):
+                engine = AskBriefEngine(gemini_api_key=active_gemini_key, model=active_model)
+                answer = engine.answer_question(user_query, brief)
+                st.markdown("##### Answer:")
+                st.info(clean_text(answer))
+
+
+# ------------------------------------------
+# TAB 3: SINCE LAST BRIEF (DIFF ENGINE)
+# ------------------------------------------
+with tab_diff:
+    st.markdown("#### 🔄 'Since Last Brief' Diff (Recurring Meetings)")
+    st.caption("Isolates and highlights only what has changed since your previous meeting with this team.")
+
+    prev_notes_input = st.text_area(
+        "Previous Meeting Notes (Optional)",
+        value="Discussed initial merchant acquiring rates. Agreed to explore pilot integration next quarter. Patrick Collison mentioned stablecoin roadmap.",
+        height=100
+    )
+
+    if st.button("Compute Intelligence Delta", type="primary"):
+        diff_res = DiffEngine.compute_diff(
+            current_news=brief.news_items,
+            current_hires=brief.hires_departures,
+            current_launches=brief.launches_funding,
+            previous_notes_or_brief=prev_notes_input
         )
+        st.session_state["computed_diff"] = diff_res
+
+    active_diff = st.session_state.get("computed_diff", brief.diff)
+    if active_diff:
+        st.markdown(f"**Comparing against:** *{active_diff.previous_meeting_date}*")
+        col_df1, col_df2 = st.columns(2)
+        with col_df1:
+            st.markdown("##### 🚀 New External Developments")
+            for nd in active_diff.new_developments:
+                st.success(f"• {clean_text(nd)}")
+        with col_df2:
+            st.markdown("##### 👥 Leadership & Product Shifts")
+            for lh in active_diff.leadership_updates:
+                st.info(f"• **Leadership:** {clean_text(lh)}")
+            for ps in active_diff.product_shifts:
+                st.info(f"• **Product:** {clean_text(ps)}")
 
 
 # ------------------------------------------
-# TAB 2: DETAILED EVIDENCE VAULT
+# TAB 4: POST-MEETING FOLLOW-UP MODE
 # ------------------------------------------
-with tab_sources:
-    st.markdown("#### 🔗 Verified Source Registry")
-    st.caption("Every factual bullet point in the executive brief is linked directly to an authenticated source article below:")
+with tab_post:
+    st.markdown("#### 📝 Post-Meeting Action Items & Follow-Up Email")
+    st.caption("Paste meeting notes or a transcript after the call to automatically generate owner-assigned Action Items and an executive follow-up email.")
+
+    sample_transcript = f"""Meeting with {entity_name} team.
+- Reviewed Agentic Commerce SDK. Patrick confirmed beta sandbox access will be provisioned by Friday.
+- Action: @Sarah to send API security specifications by Wednesday.
+- Action: @Patrick to introduce engineering lead for latency testing by next Tuesday.
+- Agreed to reconvene in two weeks to review pilot results."""
+
+    transcript_input = st.text_area("Meeting Transcript or Rough Notes:", value=sample_transcript, height=130)
+
+    if st.button("⚡ Generate Follow-Up Pack", type="primary"):
+        with st.spinner("Extracting action items and drafting follow-up email..."):
+            pm_engine = PostMeetingEngine(gemini_api_key=active_gemini_key, model=active_model)
+            att_names = [a.name for a in brief.attendees] if brief.attendees else ["Team"]
+            actions, email_draft = pm_engine.process_transcript(
+                meeting_title=f"{entity_name} Review",
+                attendees=att_names,
+                notes_or_transcript=transcript_input
+            )
+            st.session_state["post_actions"] = actions
+            st.session_state["post_email"] = email_draft
+
+    if "post_actions" in st.session_state:
+        st.markdown("##### Owner-Assigned Action Items")
+        for ai in st.session_state["post_actions"]:
+            st.markdown(f"- [ ] **{ai.task}** • **Owner:** `{ai.owner}` • **Deadline:** `{ai.deadline}` • Priority: `{ai.priority}`")
+
+        st.markdown("##### Executive Follow-Up Email Draft")
+        email_obj = st.session_state["post_email"]
+        st.text_input("Subject:", value=email_obj.subject)
+        st.text_area("Email Body:", value=email_obj.body, height=220)
+
+
+# ------------------------------------------
+# TAB 5: SOURCED EVIDENCE VAULT
+# ------------------------------------------
+with tab_vault:
+    st.markdown("#### 🔗 Sourced Evidence Vault (Verbatim Citations)")
+    st.caption("Audited repository of articles, publish timestamps, and verbatim quotes substantiating the brief:")
 
     if brief.sources:
         for s in brief.sources:
             col_v1, col_v2 = st.columns([4, 1])
             with col_v1:
                 st.markdown(f"**[{s.id}] [{clean_text(s.title)}]({s.url})**")
-                st.caption(f"Domain: `{s.domain}` • Published: {s.published_date or 'Recent'}")
+                st.caption(f"Domain: `{s.domain}` • Freshness: *{s.freshness}* • Date: {s.published_date}")
             with col_v2:
                 st.link_button("Open Article ↗", s.url, use_container_width=True)
             st.divider()
-    else:
-        st.info("No sources recorded for this brief.")
 
 
 # ------------------------------------------
-# TAB 3: GROUNDING AUDIT
+# TAB 6: HALLUCINATION AUDIT PANEL
 # ------------------------------------------
 with tab_audit:
-    st.markdown("#### 🛡️ Grounding & Anti-Hallucination Audit")
-    st.caption("Verification metrics ensuring every claim is sourced from the 30-day window:")
+    st.markdown("#### 🛡️ Comprehensive Hallucination & Trust Audit")
+    st.caption("Auditing metrics validating that every claim is grounded, fresh, and privacy-compliant.")
 
-    col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
-    with col_stat1:
-        st.metric("Total Grounded Sources", len(brief.sources))
-    with col_stat2:
-        st.metric("30-Day Window Relevance", "100%")
-    with col_stat3:
-        st.metric("Hallucination Risk", "0.0% (Zero)")
-    with col_stat4:
-        st.metric("Format", "1-Page Executive Memo")
+    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+    with col_m1:
+        st.metric("Total Claims Verified", brief.audit_panel.total_claims_verified)
+    with col_m2:
+        st.metric("Dropped Claims", brief.audit_panel.dropped_claims_count)
+    with col_m3:
+        st.metric("Privacy Filters Applied", brief.audit_panel.privacy_filtered_count)
+    with col_m4:
+        st.metric("Verification Rate", brief.audit_panel.verification_score)
 
     st.markdown("---")
-    st.markdown("##### 📌 Section-by-Section Citation Mapping")
-    st.markdown(f"- **Snapshot Citations:** Connected to primary entity source files.")
-    st.markdown(f"- **News Citations:** `{len(brief.news_items)}` items verified against publication timestamps.")
-    st.markdown(f"- **Leadership Moves:** `{len(brief.hires_departures)}` events tracked.")
-    st.markdown(f"- **Launches & Funding:** `{len(brief.launches_funding)}` releases audited.")
-    st.markdown(f"- **Questions Engine:** Generated 3–4 tactical questions tied directly to the audited events.")
+    st.markdown("##### Dropped Claims & Reason Log")
+    if brief.audit_panel.dropped_claims:
+        for dc in brief.audit_panel.dropped_claims:
+            st.error(f"**Reason:** {dc.drop_reason}\n\n**Statement Removed:** *\"{clean_text(dc.statement)}\"*\n\n**Raw Source:** `{dc.raw_source}`")
+    else:
+        st.success("✓ Zero claims dropped. Every factual statement is substantiated by an authenticated source quote.")
+
+    if brief.audit_panel.conflicts_detected:
+        st.markdown("##### Flagged Discrepancies Across Sources")
+        for conf in brief.audit_panel.conflicts_detected:
+            st.warning(f"⚠️ {conf}")

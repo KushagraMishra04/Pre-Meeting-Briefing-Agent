@@ -1,12 +1,13 @@
 """
-One-Page Executive PDF Exporter.
-Builds a crisp, professional, single-page executive brief using fpdf2.
-Features a modern light executive theme, clickable hyperlinks, and strict 1-page layout.
+Executive PDF Exporter.
+Renders BriefData across Executive Mode, Standard Mode, and Deep-Dive Mode.
+Includes Attendee Profiles, Click-to-Evidence anchors, Freshness indicators,
+and the Hallucination Audit Panel.
 """
 from typing import Optional
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
-from src.models import BriefData
+from src.models import BriefData, ToneMode
 
 
 def sanitize_text(text: str) -> str:
@@ -33,7 +34,6 @@ def sanitize_text(text: str) -> str:
     }
     for old, new in replacements.items():
         text = text.replace(old, new)
-
     return text.encode("latin-1", "replace").decode("latin-1")
 
 
@@ -42,16 +42,14 @@ class ExecutiveBriefPDF(FPDF):
 
     def __init__(self):
         super().__init__(orientation="portrait", unit="mm", format="A4")
-        # 210mm wide x 297mm high
         self.set_margins(left=12, top=10, right=12)
-        self.set_auto_page_break(auto=False)
+        self.set_auto_page_break(auto=True, margin=10)
         self.add_page()
 
 
 class PDFExporter:
-    """Renders BriefData into a single-page PDF with a clean, modern light theme."""
+    """Renders BriefData into an executive PDF with light theme."""
 
-    # Light executive color palette
     COLOR_PRIMARY = (15, 23, 42)       # Slate Navy #0F172A
     COLOR_ACCENT = (37, 99, 235)       # Royal Blue #2563EB
     COLOR_TEXT_MAIN = (30, 41, 59)     # Slate #1E293B
@@ -67,15 +65,15 @@ class PDFExporter:
         pdf = ExecutiveBriefPDF()
         printable_width = 186.0  # 210 - 24
 
-        # Top Accent Stripe (Royal Blue)
+        # Top Accent Stripe
         pdf.set_fill_color(*cls.COLOR_ACCENT)
         pdf.rect(12, 10, printable_width, 2.5, style="F")
 
-        # Header Card (Light & Crisp)
+        # Header Card
         pdf.set_fill_color(*cls.COLOR_HEADER_BG)
         pdf.set_draw_color(*cls.COLOR_BORDER)
         pdf.set_line_width(0.3)
-        pdf.rect(12, 12.5, printable_width, 20, style="DF")
+        pdf.rect(12, 12.5, printable_width, 22, style="DF")
 
         # Top tag
         pdf.set_xy(16, 14.5)
@@ -83,7 +81,7 @@ class PDFExporter:
         pdf.set_text_color(*cls.COLOR_ACCENT)
         pdf.cell(
             0, 3,
-            sanitize_text("EXECUTIVE PRE-MEETING BRIEF  |  30-DAY INTELLIGENCE"),
+            sanitize_text(f"EXECUTIVE PRE-MEETING BRIEF  |  {brief.tone_mode.name}  |  30-DAY INTELLIGENCE"),
             new_x=XPos.LMARGIN, new_y=YPos.NEXT
         )
 
@@ -97,136 +95,165 @@ class PDFExporter:
         pdf.cell(100, 8, entity_title, new_x=XPos.RIGHT, new_y=YPos.TOP)
 
         # Right-aligned meeting info
-        pdf.set_xy(110, 15)
+        pdf.set_xy(110, 14.5)
         pdf.set_font("helvetica", "", 7)
         pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
         mt_str = brief.entity.meeting_time.strftime("%b %d, %Y  %I:%M %p")
-        pdf.cell(84, 4, sanitize_text(f"Meeting: {mt_str}"), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.cell(84, 3.8, sanitize_text(f"Meeting: {mt_str}"), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-        pdf.set_xy(110, 20)
+        pdf.set_xy(110, 18.5)
         pdf.set_font("helvetica", "B", 7)
         pdf.set_text_color(*cls.COLOR_ACCENT)
-        pdf.cell(84, 4, sanitize_text(f"Window: {brief.entity.window_display}"), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.cell(84, 3.8, sanitize_text(f"Scope: {brief.entity.window_display}"), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-        pdf.set_y(35.5)
+        pdf.set_xy(110, 22.5)
+        pdf.set_font("helvetica", "I", 6.8)
+        pdf.set_text_color(*cls.COLOR_TEXT_MUTED)
+        goal_txt = f"Goal: {brief.meeting_goal[:36]}..." if brief.meeting_goal else "Goal: Executive Alignment"
+        pdf.cell(84, 3.8, sanitize_text(goal_txt), align="R", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-        # Helper: Render Section Header
+        pdf.set_y(37.0)
+
         def draw_section_header(title: str, icon_num: str):
             pdf.set_text_color(*cls.COLOR_ACCENT)
             pdf.set_font("helvetica", "B", 8)
             pdf.cell(6, 4.5, icon_num, new_x=XPos.RIGHT, new_y=YPos.TOP)
             pdf.set_text_color(*cls.COLOR_PRIMARY)
             pdf.cell(0, 4.5, sanitize_text(title.upper()), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-
-            # Thin accent line under header
             curr_y = pdf.get_y()
             pdf.set_draw_color(*cls.COLOR_LINE)
             pdf.set_line_width(0.3)
             pdf.line(12, curr_y, 12 + printable_width, curr_y)
             pdf.set_y(curr_y + 1.2)
 
-        # ==========================================
-        # SECTION 1: SNAPSHOT (2 lines)
-        # ==========================================
-        draw_section_header("1. Snapshot & Identity (2 Lines)", "01")
-        pdf.set_font("helvetica", "", 8)
-        pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
-        clean_snapshot = sanitize_text(brief.snapshot.replace("\n", " "))
-        pdf.multi_cell(printable_width, 3.8, clean_snapshot)
-        pdf.ln(1.5)
+        # Attendees section if available
+        if brief.attendees:
+            draw_section_header("Key Attendees & Participants", "00")
+            pdf.set_font("helvetica", "", 7.5)
+            for att in brief.attendees[:3]:
+                pdf.set_text_color(*cls.COLOR_ACCENT)
+                pdf.cell(4, 3.5, "-", new_x=XPos.RIGHT, new_y=YPos.TOP)
+                pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
+                att_line = f"{att.name} ({att.role_title}, {att.organization_tenure})"
+                if att.is_quiet_entity:
+                    att_line += " - Nothing notable in last 30d."
+                else:
+                    att_line += f" - {att.recent_activity[:60]}"
+                pdf.multi_cell(printable_width - 4, 3.4, sanitize_text(att_line))
+            pdf.ln(1.0)
 
-        # ==========================================
-        # SECTION 2: NEWS (LAST 30 DAYS)
-        # ==========================================
-        draw_section_header("2. Material News (Last 30 Days)", "02")
-        pdf.set_font("helvetica", "", 7.8)
-        for item in brief.news_items[:4]:
-            pdf.set_text_color(*cls.COLOR_ACCENT)
-            pdf.cell(4, 3.8, "-", new_x=XPos.RIGHT, new_y=YPos.TOP)
-            pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
-            pdf.multi_cell(printable_width - 4, 3.6, sanitize_text(item))
-            pdf.ln(0.4)
-        pdf.ln(1.0)
+        # MODE SPECIFIC CONTENT
+        if brief.tone_mode == ToneMode.EXECUTIVE:
+            draw_section_header("Executive Briefing (5 Strategic Decision Bullets)", "01")
+            pdf.set_font("helvetica", "", 8)
+            for i, b in enumerate(brief.executive_bullets, 1):
+                pdf.set_text_color(*cls.COLOR_ACCENT)
+                pdf.cell(5, 4.0, f"{i}.", new_x=XPos.RIGHT, new_y=YPos.TOP)
+                pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
+                pdf.multi_cell(printable_width - 5, 3.8, sanitize_text(b))
+                pdf.ln(0.5)
+            pdf.ln(1.0)
 
-        # ==========================================
-        # SECTION 3: HIRES & DEPARTURES
-        # ==========================================
-        draw_section_header("3. Leadership Moves & Departures", "03")
-        pdf.set_font("helvetica", "", 7.8)
-        for item in brief.hires_departures[:2]:
-            pdf.set_text_color(*cls.COLOR_ACCENT)
-            pdf.cell(4, 3.8, "-", new_x=XPos.RIGHT, new_y=YPos.TOP)
-            pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
-            pdf.multi_cell(printable_width - 4, 3.6, sanitize_text(item))
-            pdf.ln(0.4)
-        pdf.ln(1.0)
-
-        # ==========================================
-        # SECTION 4: LAUNCHES & FUNDING
-        # ==========================================
-        draw_section_header("4. Launches, Capital & Partnerships", "04")
-        pdf.set_font("helvetica", "", 7.8)
-        for item in brief.launches_funding[:2]:
-            pdf.set_text_color(*cls.COLOR_ACCENT)
-            pdf.cell(4, 3.8, "-", new_x=XPos.RIGHT, new_y=YPos.TOP)
-            pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
-            pdf.multi_cell(printable_width - 4, 3.6, sanitize_text(item))
-            pdf.ln(0.4)
-        pdf.ln(1.0)
-
-        # ==========================================
-        # SECTION 5: OPEN QUESTIONS
-        # ==========================================
-        draw_section_header("5. Strategic Open Questions to Ask in Meeting", "05")
-        q_count = min(len(brief.open_questions), 3)
-
-        for i in range(q_count):
-            q_text = sanitize_text(brief.open_questions[i])
-            pdf.set_font("helvetica", "B", 7.8)
-            pdf.set_text_color(*cls.COLOR_ACCENT)
-            pdf.cell(6, 3.8, f"Q{i+1}:", new_x=XPos.RIGHT, new_y=YPos.TOP)
+        else:
+            # 1. Snapshot
+            draw_section_header("1. Snapshot & Identity (2 Lines)", "01")
             pdf.set_font("helvetica", "", 7.8)
             pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
-            pdf.multi_cell(printable_width - 6, 3.6, q_text)
-            pdf.ln(0.5)
+            clean_snapshot = sanitize_text(brief.snapshot.replace("\n", " "))
+            pdf.multi_cell(printable_width, 3.6, clean_snapshot)
+            pdf.ln(1.0)
 
-        pdf.ln(1.0)
-
-        # ==========================================
-        # SECTION 6: SOURCES (CLICKABLE HYPERLINKS)
-        # ==========================================
-        draw_section_header("6. Grounded Sources (Numbered & Dated)", "06")
-        pdf.set_font("helvetica", "", 7)
-
-        max_sources = min(len(brief.sources), 6)
-        col_w = printable_width / 2.0
-
-        for i in range(0, max_sources, 2):
-            s1 = brief.sources[i]
-            s2 = brief.sources[i + 1] if i + 1 < max_sources else None
-
-            # Left column source
-            d1 = f" ({s1.published_date})" if s1.published_date else ""
-            txt1 = sanitize_text(f"[{s1.id}] {s1.domain}{d1} - {s1.title[:36]}")
-            pdf.set_text_color(*cls.COLOR_ACCENT)
-            pdf.cell(col_w - 2, 3.5, txt1, link=s1.url, new_x=XPos.RIGHT, new_y=YPos.TOP)
-
-            # Right column source
-            if s2:
-                d2 = f" ({s2.published_date})" if s2.published_date else ""
-                txt2 = sanitize_text(f"[{s2.id}] {s2.domain}{d2} - {s2.title[:36]}")
-                pdf.cell(col_w - 2, 3.5, txt2, link=s2.url, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+            # 2. News
+            draw_section_header("2. Material News (Last 30 Days)", "02")
+            pdf.set_font("helvetica", "", 7.5)
+            if brief.news_items:
+                for item in brief.news_items[:3]:
+                    fresh_str = f" ({item.evidence.freshness})" if item.evidence else ""
+                    pdf.set_text_color(*cls.COLOR_ACCENT)
+                    pdf.cell(4, 3.6, "-", new_x=XPos.RIGHT, new_y=YPos.TOP)
+                    pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
+                    pdf.multi_cell(printable_width - 4, 3.4, sanitize_text(f"{item.statement} {item.citation_tag}{fresh_str}"))
+                    pdf.ln(0.3)
             else:
-                pdf.ln(3.5)
+                pdf.cell(0, 3.6, "Nothing notable in the last 30 days.", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+            pdf.ln(0.8)
 
-        # Footer note (Pinned to bottom of page)
-        pdf.set_xy(12, 287)
-        pdf.set_font("helvetica", "I", 6.5)
+            # 3. Hires & Departures
+            draw_section_header("3. Leadership Moves & Departures", "03")
+            pdf.set_font("helvetica", "", 7.5)
+            if brief.hires_departures:
+                for item in brief.hires_departures[:2]:
+                    pdf.set_text_color(*cls.COLOR_ACCENT)
+                    pdf.cell(4, 3.6, "-", new_x=XPos.RIGHT, new_y=YPos.TOP)
+                    pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
+                    pdf.multi_cell(printable_width - 4, 3.4, sanitize_text(f"{item.statement} {item.citation_tag}"))
+                    pdf.ln(0.3)
+            else:
+                pdf.cell(0, 3.6, "Nothing notable in the last 30 days.", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+            pdf.ln(0.8)
+
+            # 4. Launches & Funding
+            draw_section_header("4. Launches, Capital & Partnerships", "04")
+            pdf.set_font("helvetica", "", 7.5)
+            if brief.launches_funding:
+                for item in brief.launches_funding[:2]:
+                    pdf.set_text_color(*cls.COLOR_ACCENT)
+                    pdf.cell(4, 3.6, "-", new_x=XPos.RIGHT, new_y=YPos.TOP)
+                    pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
+                    pdf.multi_cell(printable_width - 4, 3.4, sanitize_text(f"{item.statement} {item.citation_tag}"))
+                    pdf.ln(0.3)
+            else:
+                pdf.cell(0, 3.6, "Nothing notable in the last 30 days.", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+            pdf.ln(0.8)
+
+        # GOAL-AWARE QUESTIONS
+        draw_section_header("5. Goal-Aware Strategic Questions", "05")
+        for i in range(min(len(brief.goal_aware_questions), 3)):
+            q_text = sanitize_text(brief.goal_aware_questions[i])
+            pdf.set_font("helvetica", "B", 7.5)
+            pdf.set_text_color(*cls.COLOR_ACCENT)
+            pdf.cell(6, 3.6, f"Q{i+1}:", new_x=XPos.RIGHT, new_y=YPos.TOP)
+            pdf.set_font("helvetica", "", 7.5)
+            pdf.set_text_color(*cls.COLOR_TEXT_MAIN)
+            pdf.multi_cell(printable_width - 6, 3.4, q_text)
+            pdf.ln(0.4)
+        pdf.ln(0.8)
+
+        # SOURCES
+        draw_section_header("6. Grounded Sources (Numbered & Dated)", "06")
+        pdf.set_font("helvetica", "", 6.8)
+        max_sources = min(len(brief.sources), 4)
+        for s in brief.sources[:max_sources]:
+            txt = sanitize_text(f"[{s.id}] {s.domain} ({s.freshness}) - {s.title[:45]}")
+            pdf.set_text_color(*cls.COLOR_ACCENT)
+            pdf.cell(printable_width, 3.2, txt, link=s.url, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.ln(0.8)
+
+        # HALLUCINATION AUDIT PANEL
+        draw_section_header("Hallucination Audit Panel", "07")
+        pdf.set_font("helvetica", "B", 6.8)
+        pdf.set_text_color(22, 163, 74)  # Green
+        pdf.cell(60, 3.2, f"Total Claims Verified: {brief.audit_panel.total_claims_verified}", new_x=XPos.RIGHT, new_y=YPos.TOP)
+        pdf.set_text_color(220, 38, 38)  # Red
+        pdf.cell(60, 3.2, f"Dropped Claims: {brief.audit_panel.dropped_claims_count}", new_x=XPos.RIGHT, new_y=YPos.TOP)
+        pdf.set_text_color(*cls.COLOR_TEXT_MUTED)
+        pdf.cell(60, 3.2, f"Privacy Filters: {brief.audit_panel.privacy_filtered_count}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+        if brief.audit_panel.dropped_claims:
+            pdf.set_font("helvetica", "I", 6.2)
+            dc = brief.audit_panel.dropped_claims[0]
+            pdf.cell(printable_width, 3.0, sanitize_text(f"Drop Reason: {dc.drop_reason} - \"{dc.statement[:65]}...\""), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+        # Footer
+        curr_y = pdf.get_y()
+        if curr_y < 285:
+            pdf.set_xy(12, 287)
+        pdf.set_font("helvetica", "I", 6.2)
         pdf.set_text_color(*cls.COLOR_TEXT_MUTED)
         pdf.cell(
             printable_width,
             3,
-            sanitize_text("Generated by Briefly Agent  |  Every claim grounded in verified sources  |  One-Page Brief"),
+            sanitize_text("Briefly Agent  |  Strictly Sourced Claims  |  Trust & Safety Audited"),
             align="C"
         )
 
@@ -234,7 +261,6 @@ class PDFExporter:
 
     @classmethod
     def export_to_file(cls, brief: BriefData, filepath: str) -> str:
-        """Writes brief to disk and returns absolute path."""
         data = cls.render(brief)
         with open(filepath, "wb") as f:
             f.write(data)

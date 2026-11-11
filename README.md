@@ -1,120 +1,90 @@
-# 📋 Pre-Meeting Briefing Agent
+# ⚡ Briefly • Pre-Meeting Briefing Agent
 
-> **AI Hackathon Project:** Given a company or person and a meeting time, produce an executive **one-page brief** covering the last 30 days of news, hires, launches, and open questions, with **every claim sourced**.
-
----
-
-## 💡 The Core Problem
-
-Executives, sales leaders, and investors spend 20–30 minutes before high-stakes meetings manually trawling through search engines, LinkedIn, and press releases. Current LLM summarizers suffer from **hallucinations**, cite stale multi-year-old articles, or invent fake citations.
-
-The **Pre-Meeting Briefing Agent** solves this with an audit-grounded intelligence pipeline:
-- **Strict 30-Day Time Horizon:** Automatically calculates the reference window relative to the meeting date (`Meeting Time - 30 Days`).
-- **100% Sourced Claims:** Every single factual bullet point is attributed to a verified, deduplicated citation tag (`[1]`, `[2]`), linked to a real URL and published date.
-- **Strategic Open Questions:** Synthesizes recent launches and leadership changes into tactical conversation starters.
-- **Executive One-Page PDF:** Generates a single-page PDF memo with clickable links.
+> **AI Hackathon Project:** An enterprise-grade, trust-audited AI assistant designed to generate concise, highly reliable, and actionable intelligence briefs for upcoming calendar meetings with **100% sourced claims** and **zero hallucinations**.
 
 ---
 
-## 📐 Blueprint: The 6 Core Sections
+## 🌟 Core Highlights & Feature Overview
 
-| Section | Focus | Grounding Rule |
-|---|---|---|
-| **1. Snapshot** | 2 concise lines on identity, business model, scale, or role | Sourced `[X]` |
-| **2. News (30d)** | Top 3–5 material developments with date stamps | Strictly scoped to 30-day window |
-| **3. Hires & Departures** | Executive leadership moves, board shifts, appointments | Sourced `[X]` |
-| **4. Launches & Funding** | New products, capital rounds, valuations, partnerships | Sourced `[X]` |
-| **5. Open Questions** | 3–4 high-impact strategic questions for the meeting | Synthesized from verified events |
-| **6. Sources** | Numbered list: Domain, Title, Published Date, and Link | Clickable references |
+### 1. 👥 Attendee-Aware Intelligence
+- Parses calendar invites to identify all participants.
+- Generates privacy-compliant attendee mini-profiles:
+  - Role & Title
+  - Organization & Tenure
+  - Recent Posts / Public Activity (last 30 days)
+  - Shared Interests or Mutual Connections
+
+### 2. 🎛️ Brief Tone & Format Toggles
+- **Executive Mode:** Exactly 5 high-impact bullet points focusing strictly on strategic intent, key risks, and decisions needed.
+- **Standard Mode:** Balanced overview including meeting objective, attendee summary, key topics, and quick talking points.
+- **Deep-Dive Mode:** Comprehensive 2-page brief detailing attendee backgrounds, historical context, key debates, and potential strategic outcomes.
+
+### 3. 🎯 Goal-Aware Strategic Questions
+- Input a specific meeting goal (e.g., *"Negotiate enterprise volume tiers for agentic checkout"*).
+- The agent synthesizes 3–4 high-impact conversation starters tailored directly to achieve that specific objective.
+
+### 4. 🔍 Click-to-Evidence Grounding & Badges
+- Every factual claim maps to its exact verbatim source quote: `[Source Quote: "..."]`.
+- Interactive UI text anchors allow instant inspection of evidence.
+- Claims carry trust tags: `[CONFIRMED]`, `[REPORTED / UNCONFIRMED]`, `[Freshness: 3 days ago]`.
+
+### 5. 🛡️ Trust & Safety Guardrails
+- **Privacy Guardrail:** For private individuals, automatically filters personal/domestic references and restricts strictly to public professional data.
+- **Rumor vs. Confirmed Tagging:** Distinguishes official press releases/SEC filings from speculative reports.
+- **Conflict Detector:** Automatically flags discrepancies when two sources report conflicting numbers (e.g., conflicting investment or valuation figures).
+- **Freshness Indicator:** Shows relative age of each source (*"Yesterday"*, *"3 days ago"*, *"2 weeks ago"*).
+- **Quiet-Entity Handling:** If an entity has no recent public activity in the 30-day window, explicitly emits: *"Nothing notable in the last 30 days."* (zero fluff padding).
+
+### 6. 📊 Hallucination Audit Panel
+Every brief appends an audit verification summary:
+```
+---
+Hallucination Audit Panel:
+- Total Claims Verified: [X]
+- Dropped Claims: [Y]
+- Drop Reason(s): [List of removed ungrounded or out-of-scope claims]
+---
+```
+
+### 7. 💬 Ask-The-Brief (Grounded Conversational Q&A)
+- Interactive Q&A chat drawer right on the page.
+- Ask follow-up questions about the company, attendees, or risks with answers strictly cited to retrieved sources.
+
+### 8. 🔄 "Since Last Brief" Diff (For Recurring Meetings)
+- Compares current intelligence against previous meeting notes.
+- Highlights ONLY new external news, leadership shifts, and product releases.
+
+### 9. 📅 Calendar Auto-Trigger & .ICS Parser
+- Parses standard `.ics` (RFC 5545) files or free-form meeting invites (Google Calendar, Outlook, Zoom).
+- Auto-extracts meeting title, date/time, attendees, and meeting goals with one click.
+
+### 10. 📝 Post-Meeting Follow-Up Mode
+- Paste meeting transcripts or rough notes post-call.
+- Extracts owner-assigned Action Items with deadlines and priority.
+- Drafts a polished executive follow-up email ready to copy and send.
 
 ---
 
-## 🏗️ Architecture & Pipeline Flow
+## 🏗️ Architecture
 
 ```mermaid
 flowchart TD
-    A["User Input: Entity + Meeting Time"] --> B["Stage 1: Entity Resolution & 30-Day Window"]
-    B --> C["Stage 2: Multi-Query Search Retrieval\n(Tavily with DuckDuckGo Fallback)"]
-    C --> D["Stage 3: Atomic Claim Extraction\n(Gemini 2.5 Flash / Heuristic)"]
-    D --> E["Stage 4: Grounding & Citation Verifier\n(Deduplication & Recency Check)"]
-    E --> F["Stage 5: Brief Synthesis & Question Engine"]
-    F --> G["One-Page PDF Exporter (FPDF2)\n& Streamlit Interactive Dashboard"]
+    A["Calendar Invite (.ics) / User Query"] --> B["Stage 1: Entity Resolution & Attendee Scoping"]
+    B --> C["Stage 2: Multi-Query Retrieval\n(Tavily + DuckDuckGo Fallback)"]
+    C --> D["Stage 3: Claim & Verbatim Quote Extraction"]
+    D --> E["Stage 4: Trust & Safety Engine\n(Privacy, Conflicts, Freshness, Recency)"]
+    E --> F["Stage 5: Goal-Aware Questions & Diff Engine"]
+    F --> G["Stage 6: Brief Synthesis\n(Executive, Standard, Deep-Dive)"]
+    G --> H["Hallucination Audit Panel & PDF Export"]
 ```
 
 ---
 
-## 🚀 Quickstart Guide
+## 🚀 Running the App
 
-### 1. Prerequisites
-- Python 3.10+ (Tested on Python 3.13)
-
-### 2. Installation
-Clone the repository and install the dependencies:
-```bash
-git clone <repo-url>
-cd "Pre-meeting briefing agent"
-pip install -r requirements.txt
+```powershell
+streamlit run app.py --server.port 8501
 ```
+Open **[http://localhost:8501](http://localhost:8501)** in your browser.
 
-### 3. Configure API Keys (Optional but Recommended)
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-Fill in your keys:
-```env
-# Gemini API Key (for LLM extraction & questions)
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Tavily API Key (Primary search engine; falls back to DuckDuckGo if blank)
-TAVILY_API_KEY=your_tavily_api_key_here
-
-# Model selection
-GEMINI_MODEL=gemini-2.5-flash
-```
-*(Note: You can also enter or swap API keys directly inside the Streamlit UI sidebar during live demos!)*
-
-### 4. Run the Streamlit Web Application
-```bash
-streamlit run app.py
-```
-Open your browser at `http://localhost:8501`.
-
-### 5. CLI Test Script
-To test the pipeline directly in your terminal:
-```bash
-python test_pipeline.py
-```
-This generates `test_output_brief.pdf` in the root folder.
-
----
-
-## 🛠️ Project Directory Structure
-
-```
-Pre-meeting briefing agent/
-├── app.py                     # Streamlit interactive UI with demo presets
-├── test_pipeline.py           # CLI runner & verification tester
-├── requirements.txt           # Python dependencies
-├── .env.example               # Environment template
-├── README.md                  # Documentation & architecture
-└── src/
-    ├── __init__.py
-    ├── models.py              # Pydantic models (Entity, Claim, Source, BriefData)
-    ├── entity_resolver.py     # Entity classifier & 30-day window calculator
-    ├── search_retriever.py    # Tavily API + resilient DuckDuckGo search
-    ├── claim_extractor.py     # Gemini atomic claim extractor with fallback
-    ├── verifier.py            # Citation grounding, deduplication & question generator
-    ├── brief_generator.py     # 6-section blueprint synthesis & markdown builder
-    └── pdf_exporter.py        # Executive one-page PDF generator (fpdf2)
-```
-
----
-
-## 🏆 Key Hackathon Highlights
-
-1. **Zero-Config Fallback:** Works even without paid API keys via built-in DuckDuckGo search and rule-based extraction fallback.
-2. **True Single-Page PDF Layout:** Specially tuned margins, typography, and line-height budgeting to guarantee a single-page output.
-3. **Grounding Audit Tab:** A dedicated transparency inspector in Streamlit showing judges the exact raw search results and grounding checks.
-4. **Interactive Demo Presets:** 1-click buttons in the sidebar for popular entities ("Stripe", "Anthropic", "Satya Nadella", "Jensen Huang") for seamless live judging presentations.
-
+- Click **🏢 Stripe**, **🤖 Anthropic (Deep-Dive)**, or **🏥 Acme Health (Quiet Entity)** at the top to explore instant pre-verified demos!

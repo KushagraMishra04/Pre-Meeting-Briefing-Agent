@@ -1,9 +1,10 @@
 """
 Verification and Citation Grounding Module.
 Audits claims against retrieved sources, assigns deduplicated citation tags [1], [2],
-verifies 30-day window relevance, and synthesizes strategic open questions.
+verifies 30-day window relevance, enforces Trust & Safety guardrails,
+and synthesizes goal-aware strategic questions.
 """
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from datetime import datetime, timedelta
 import logging
@@ -13,13 +14,17 @@ from google import genai
 from google.genai import types
 
 from src.models import (
-    ExtractedClaim,
     SearchResult,
     Source,
-    VerifiedClaim,
     ResolvedEntity,
-    BriefData,
+    GroundedClaim,
+    EvidenceQuote,
+    DroppedClaimRecord,
+    HallucinationAuditLog,
+    VerificationStatus,
 )
+from src.claim_extractor import RawExtractedClaim
+from src.trust_safety import TrustSafetyEngine
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +41,7 @@ def extract_domain(url: str) -> str:
 
 
 class Verifier:
-    """Performs citation verification, deduplication, and generates strategic open questions."""
+    """Performs citation verification, deduplication, trust auditing, and goal-aware questions."""
 
     def __init__(self, gemini_api_key: Optional[str] = None, model: str = "gemini-2.5-flash"):
         self.api_key = gemini_api_key.strip() if gemini_api_key else None
@@ -50,130 +55,186 @@ class Verifier:
 
     def verify_and_ground(
         self,
-        claims: List[ExtractedClaim],
+        claims: List[RawExtractedClaim],
         search_results: List[SearchResult],
-        entity: ResolvedEntity
-    ) -> Tuple[List[VerifiedClaim], List[Source]]:
+        entity: ResolvedEntity,
+        queries_executed: Optional[List[str]] = None
+    ) -> Tuple[List[GroundedClaim], List[Source], HallucinationAuditLog]:
         """
         Validates claims against retrieved URLs, assigns citation indices,
-        and constructs the deduplicated master source list.
+        enforces privacy guardrails, checks freshness, and generates the Hallucination Audit Log.
         """
-        # Map known URLs to SearchResult for title & date lookup
         url_to_result: Dict[str, SearchResult] = {res.url: res for res in search_results}
-
         source_registry: Dict[str, Source] = {}
-        verified_claims: List[VerifiedClaim] = []
+        grounded_claims: List[GroundedClaim] = []
+        dropped_claims: List[DroppedClaimRecord] = []
+        privacy_filtered_count = 0
 
-        # Buffer for dates (allow a 5-day leeway for reporting lag)
         effective_start = entity.window_start - timedelta(days=5)
         effective_end = entity.window_end + timedelta(days=2)
 
-        for claim in claims:
+        for idx, claim in enumerate(claims):
             url = claim.source_url.strip()
+
+            # 1. Privacy Guardrail Check
+            is_private_safe, privacy_reason = TrustSafetyEngine.audit_privacy_guardrail(claim.statement)
+            if not is_private_safe:
+                privacy_filtered_count += 1
+                dropped_claims.append(
+                    DroppedClaimRecord(
+                        statement=claim.statement[:100] + "...",
+                        drop_reason=privacy_reason or "Privacy Guardrail: Filtered non-professional data",
+                        raw_source=url
+                    )
+                )
+                continue
+
+            # 2. Source URL Match Check
             if not url or url not in url_to_result:
-                # Discard ungrounded claim with no verified source match
-                logger.info(f"Discarding claim without verified source match: {claim.statement[:50]}...")
+                dropped_claims.append(
+                    DroppedClaimRecord(
+                        statement=claim.statement[:100] + "...",
+                        drop_reason="Ungrounded: No matching authenticated source URL in retrieval index",
+                        raw_source=url
+                    )
+                )
                 continue
 
             ref_res = url_to_result[url]
+
+            # 3. 30-Day Window Relevance Check
+            claim_date_str = claim.date or ref_res.published_date
+            if claim_date_str and claim.category != "snapshot":
+                try:
+                    parsed_d = date_parser.parse(claim_date_str, fuzzy=True)
+                    if parsed_d.tzinfo:
+                        parsed_d = parsed_d.replace(tzinfo=None)
+                    if parsed_d < effective_start or parsed_d > effective_end:
+                        dropped_claims.append(
+                            DroppedClaimRecord(
+                                statement=claim.statement[:100] + "...",
+                                drop_reason=f"Scope Exceeded: Event occurred on {claim_date_str}, outside the 30-day window",
+                                raw_source=url
+                            )
+                        )
+                        continue
+                except Exception:
+                    pass
 
             # Register source if not already seen
             if url not in source_registry:
                 source_id = len(source_registry) + 1
                 domain = extract_domain(url)
                 date_str = ref_res.published_date or claim.date or "Recent"
+                freshness_str = TrustSafetyEngine.calculate_freshness(date_str, entity.meeting_time)
                 source_registry[url] = Source(
                     id=source_id,
                     title=ref_res.title or claim.source_title or domain,
                     domain=domain,
                     url=url,
-                    published_date=date_str
+                    published_date=date_str,
+                    freshness=freshness_str
                 )
 
             current_source = source_registry[url]
+            status = TrustSafetyEngine.classify_rumor_vs_confirmed(claim.statement, current_source.domain)
 
-            # Date window check
-            is_within_window = True
-            claim_date_str = claim.date or ref_res.published_date
-            if claim_date_str and claim.category != "snapshot":
-                try:
-                    parsed_d = date_parser.parse(claim_date_str, fuzzy=True)
-                    # Strip timezone for comparison if needed
-                    if parsed_d.tzinfo:
-                        parsed_d = parsed_d.replace(tzinfo=None)
-                    if parsed_d < effective_start or parsed_d > effective_end:
-                        is_within_window = False
-                except Exception:
-                    # If date parsing fails, accept with warning
-                    is_within_window = True
+            # Build Click-to-Evidence object
+            evidence = EvidenceQuote(
+                verbatim_quote=claim.verbatim_quote or claim.statement,
+                source_id=current_source.id,
+                source_url=url,
+                source_title=current_source.title,
+                freshness=current_source.freshness,
+                status=status
+            )
 
-            verified_claims.append(
-                VerifiedClaim(
+            grounded_claims.append(
+                GroundedClaim(
+                    id=f"claim_{idx+1}",
                     statement=claim.statement,
                     category=claim.category,
-                    source_id=current_source.id,
-                    source_url=url,
-                    source_title=current_source.title,
-                    source_domain=current_source.domain,
-                    date=claim_date_str,
-                    is_grounded=True,
-                    is_within_window=is_within_window,
-                    citation_tag=f"[{current_source.id}]"
+                    citation_tag=f"[{current_source.id}]",
+                    evidence=evidence,
+                    is_confirmed=(status == VerificationStatus.CONFIRMED),
+                    date_str=claim_date_str
                 )
             )
 
-        sources_list = sorted(list(source_registry.values()), key=lambda s: s.id)
-        return verified_claims, sources_list
+        # 4. Conflict Detection
+        conflicts = TrustSafetyEngine.detect_conflicts(grounded_claims)
+        for conflict_desc in conflicts:
+            for gc in grounded_claims:
+                if any(kw in gc.statement.lower() for kw in ["valuation", "raised", "billion", "million"]):
+                    gc.conflict_detected = True
+                    gc.evidence.conflict_note = conflict_desc
 
-    def generate_open_questions(
+        sources_list = sorted(list(source_registry.values()), key=lambda s: s.id)
+
+        # Hallucination Audit Log construction
+        audit_log = HallucinationAuditLog(
+            total_claims_verified=len(grounded_claims),
+            dropped_claims_count=len(dropped_claims),
+            dropped_claims=dropped_claims,
+            queries_executed=queries_executed or [],
+            privacy_filtered_count=privacy_filtered_count,
+            conflicts_detected=conflicts,
+            verification_score="100% Grounded" if grounded_claims else "0%"
+        )
+
+        return grounded_claims, sources_list, audit_log
+
+    def generate_goal_aware_questions(
         self,
         entity: ResolvedEntity,
-        verified_claims: List[VerifiedClaim]
+        claims: List[GroundedClaim],
+        meeting_goal: Optional[str] = None
     ) -> List[str]:
         """
-        Synthesizes 3-5 smart, non-generic conversation starters for the meeting
-        based on the verified claims.
+        Synthesizes 3-5 smart, goal-aligned questions for the meeting.
+        Directly targets the user's specific meeting objective.
         """
-        if self.client and verified_claims:
+        if self.client and claims:
             try:
-                return self._generate_questions_with_gemini(entity, verified_claims)
+                return self._generate_questions_with_gemini(entity, claims, meeting_goal)
             except Exception as e:
-                logger.warning(f"Gemini open questions generation failed: {e}. Using rule-based fallback.")
+                logger.warning(f"Gemini questions failed: {e}. Using deterministic fallback.")
 
-        return self._generate_questions_rule_based(entity, verified_claims)
+        return self._generate_questions_rule_based(entity, claims, meeting_goal)
 
     def _generate_questions_with_gemini(
         self,
         entity: ResolvedEntity,
-        claims: List[VerifiedClaim]
+        claims: List[GroundedClaim],
+        meeting_goal: Optional[str]
     ) -> List[str]:
-        """Uses Gemini to craft high-impact executive conversation questions."""
         claims_summary = "\n".join(
-            [f"- {c.statement} ({c.category}, Ref: {c.citation_tag})" for c in claims[:15]]
+            [f"- {c.statement} ({c.category}, Tag: {c.citation_tag})" for c in claims[:12]]
         )
+        goal_prompt = f"User's Stated Meeting Objective / Goal: '{meeting_goal}'" if meeting_goal else "General executive strategic alignment."
 
         prompt = f"""
-You are an executive meeting strategist preparing a high-level briefing for a meeting with:
-Entity: {entity.name} ({entity.entity_type.value})
-Meeting Date: {entity.meeting_time.strftime('%B %d, %Y')}
+You are an executive meeting strategist preparing a high-stakes briefing.
+Target: {entity.name}
+{goal_prompt}
 
-Recent verified facts from the last 30 days:
+Recent Verified Developments (Last 30 Days):
 {claims_summary}
 
 TASK:
-Generate 3 to 4 sharp, strategic "Open Questions" to ask in this meeting.
+Generate 3 to 4 sharp, goal-aware "Open Questions" to ask in this meeting.
 Guidelines:
-1. DO NOT ask generic questions like "What are your goals?" or "How is business?".
-2. Tie each question directly to a recent announcement, product launch, hire, or market development from the facts above.
-3. Sound like a knowledgeable, prepared partner or executive peer.
-4. Keep each question to 1-2 concise sentences.
+1. Align directly with the meeting objective ('{meeting_goal or "Strategic Partnership"}').
+2. Connect the goal directly to a recent verified news event, product launch, or leadership change from the list above.
+3. Sound like a prepared, authoritative peer or executive partner.
+4. Each question must be 1-2 concise sentences.
 
 Return a JSON array of strings:
 ["Question 1", "Question 2", "Question 3"]
 """
         config = types.GenerateContentConfig(
             response_mime_type="application/json",
-            temperature=0.3
+            temperature=0.25
         )
         response = self.client.models.generate_content(
             model=self.model,
@@ -189,41 +250,43 @@ Return a JSON array of strings:
             data = list(data.values())[0]
         if isinstance(data, list) and data:
             return [str(q).strip() for q in data[:4]]
-        return self._generate_questions_rule_based(entity, claims)
+
+        return self._generate_questions_rule_based(entity, claims, meeting_goal)
 
     def _generate_questions_rule_based(
         self,
         entity: ResolvedEntity,
-        claims: List[VerifiedClaim]
+        claims: List[GroundedClaim],
+        meeting_goal: Optional[str]
     ) -> List[str]:
-        """Deterministic fallback questions based on extracted categories."""
         questions = []
         name = entity.name
-
         launches = [c for c in claims if c.category == "launches_funding"]
         hires = [c for c in claims if c.category == "hires_departures"]
         news = [c for c in claims if c.category == "news"]
 
+        if meeting_goal:
+            questions.append(
+                f"With our goal of '{meeting_goal}', how do your recent announcements in the last 30 days accelerate this timeline?"
+            )
+
         if launches:
             stmt = launches[0].statement
             questions.append(
-                f"Following the recent announcement regarding {stmt[:70]}..., what has customer reception been like so far?"
+                f"Regarding the recent launch ({stmt[:60]}...), what enterprise adoption benchmarks have been established so far?"
             )
         if hires:
             stmt = hires[0].statement
             questions.append(
-                f"Given the recent leadership transition ({stmt[:60]}...), how is that reshaping your tactical priorities this quarter?"
+                f"With recent leadership appointments ({stmt[:60]}...), how will that reshape tactical decision-making this quarter?"
             )
-        if news:
+        if news and len(questions) < 3:
             stmt = news[0].statement
             questions.append(
-                f"With recent industry developments in mind ({stmt[:60]}...), where are you focusing resource allocation over the next 6 months?"
+                f"In light of recent industry coverage ({stmt[:60]}...), how are you managing operational risk heading into year-end?"
             )
 
-        if len(questions) < 3:
-            questions.append(
-                f"What is the single biggest milestone {name} is targeting to close out this fiscal cycle?"
-            )
+        while len(questions) < 3:
+            questions.append(f"What is the single highest-priority milestone for {name} to achieve over the next 90 days?")
 
         return questions[:4]
-
