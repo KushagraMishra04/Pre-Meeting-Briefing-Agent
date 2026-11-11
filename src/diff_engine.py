@@ -59,3 +59,4 @@ class DiffEngine:
             product_shifts=delta_launches[:2] if delta_launches else ["No new product launches since last sync."],
             has_diff=True
         )
+

@@ -117,3 +117,4 @@ class TrustSafetyEngine:
         if claims_count == 0:
             return f"Nothing notable in the last 30 days for {entity_name}."
         return None
+
