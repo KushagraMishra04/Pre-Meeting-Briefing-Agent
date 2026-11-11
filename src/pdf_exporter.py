@@ -1,8 +1,7 @@
 """
 Executive PDF Exporter.
 Renders BriefData across Executive Mode, Standard Mode, and Deep-Dive Mode.
-Includes Attendee Profiles, Click-to-Evidence anchors, Freshness indicators,
-and the Hallucination Audit Panel.
+Features a warm peach & orange executive theme, clickable hyperlinks, and strict 1-page layout.
 """
 from typing import Optional
 from fpdf import FPDF
@@ -48,16 +47,16 @@ class ExecutiveBriefPDF(FPDF):
 
 
 class PDFExporter:
-    """Renders BriefData into an executive PDF with light theme."""
+    """Renders BriefData into an executive PDF with warm peach & orange theme."""
 
-    COLOR_PRIMARY = (15, 23, 42)       # Slate Navy #0F172A
-    COLOR_ACCENT = (37, 99, 235)       # Royal Blue #2563EB
-    COLOR_TEXT_MAIN = (30, 41, 59)     # Slate #1E293B
-    COLOR_TEXT_MUTED = (100, 116, 139) # Gray #64748B
-    COLOR_HEADER_BG = (239, 246, 255)  # Soft Sky Tint #EFF6FF
-    COLOR_BORDER = (219, 234, 254)     # Soft Blue Border #DBEAFE
-    COLOR_BG_BOX = (248, 250, 252)     # Off-white #F8FAFC
-    COLOR_LINE = (226, 232, 240)       # Light border #E2E8F0
+    COLOR_PRIMARY = (28, 25, 23)        # Dark Chocolate / Slate #1C1917
+    COLOR_ACCENT = (234, 88, 12)        # Burnt Orange #EA580C
+    COLOR_TEXT_MAIN = (41, 37, 36)      # Stone 800 #292524
+    COLOR_TEXT_MUTED = (120, 113, 108)  # Stone 500 #78716C
+    COLOR_HEADER_BG = (255, 247, 237)   # Peach Cream #FFF7ED
+    COLOR_BORDER = (254, 215, 170)      # Peach Orange Border #FED7AA
+    COLOR_BG_BOX = (255, 251, 245)      # Light Apricot #FFFBF5
+    COLOR_LINE = (254, 215, 170)        # Border line #FED7AA
 
     @classmethod
     def render(cls, brief: BriefData) -> bytes:
@@ -65,11 +64,11 @@ class PDFExporter:
         pdf = ExecutiveBriefPDF()
         printable_width = 186.0  # 210 - 24
 
-        # Top Accent Stripe
+        # Top Accent Stripe (Burnt Orange)
         pdf.set_fill_color(*cls.COLOR_ACCENT)
         pdf.rect(12, 10, printable_width, 2.5, style="F")
 
-        # Header Card
+        # Header Card (Warm Peach Tint)
         pdf.set_fill_color(*cls.COLOR_HEADER_BG)
         pdf.set_draw_color(*cls.COLOR_BORDER)
         pdf.set_line_width(0.3)

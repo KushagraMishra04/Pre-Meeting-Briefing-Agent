@@ -1,17 +1,7 @@
 """
 Pre-Meeting Briefing Agent - Executive Intelligence Dashboard.
-A comprehensive, trust-audited intelligence agent for high-stakes meetings.
-Features:
-- Attendee-Aware Intelligence (Profiles, Tenure, Activity, Privacy Guardrail)
-- Tone Modes: Executive (5 Bullets), Standard, Deep-Dive
-- Click-to-Evidence Grounding with Verbatim Quotes
-- Goal-Aware Strategic Questions
-- Hallucination Audit Panel (Verified, Dropped Claims, Reasons)
-- Ask-The-Brief Grounded Chat with Citations
-- Since-Last-Brief Recurring Meeting Diff
-- Calendar Auto-Trigger & .ICS Invite Parser
-- Post-Meeting Action Items & Executive Follow-Up Email Generator
-- Trust & Safety (Freshness, Confirmed vs Rumor, Conflict Detector)
+Theme: Warm Peach bleeding into Sunset Orange.
+Featuring extra-large, high-visibility search consoles and enterprise trust features.
 """
 import os
 import re
@@ -50,7 +40,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# MODERN LIGHT SAAS STYLING
+# WARM PEACH & ORANGE GRADIENT THEME (High-Visibility)
 # ==========================================
 st.markdown("""
 <style>
@@ -60,93 +50,135 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
     
+    /* Global Page Background: Warm Peach bleeding into Sunset Orange */
     .stApp {
-        background-color: #F8FAFC;
+        background: linear-gradient(140deg, #FFF7ED 0%, #FFEDD5 30%, #FED7AA 70%, #FDBA74 100%) !important;
+        background-attachment: fixed !important;
+        color: #1C1917;
     }
     
-    /* THE MAIN HIGHLIGHT HERO CARD */
-    .hero-search-card {
-        background: #FFFFFF;
-        border: 2px solid #3B82F6;
-        border-radius: 16px;
-        padding: 24px 28px;
-        box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.10), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
-        margin-bottom: 24px;
+    /* High-Visibility Card Containers */
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        background: rgba(255, 255, 255, 0.94) !important;
+        backdrop-filter: blur(14px) !important;
+        border: 2px solid #FB923C !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 30px -5px rgba(234, 88, 12, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.04) !important;
+        padding: 24px 28px !important;
     }
-    .hero-search-title {
-        font-size: 1.35rem;
+    
+    /* SEARCH BARS: EXTRA LARGE & HIGH VISIBILITY */
+    div[data-baseweb="input"] {
+        background-color: #FFFFFF !important;
+        border: 2.5px solid #F97316 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 16px rgba(249, 115, 22, 0.14) !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    
+    div[data-baseweb="input"]:focus-within {
+        border-color: #C2410C !important;
+        box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.30), 0 6px 22px rgba(234, 88, 12, 0.20) !important;
+    }
+    
+    /* Search Bar Typography */
+    div[data-baseweb="input"] input {
+        font-size: 1.15rem !important;
+        font-weight: 600 !important;
+        color: #1C1917 !important;
+        padding: 12px 18px !important;
+    }
+    
+    div[data-baseweb="input"] input::placeholder {
+        color: #9A3412 !important;
+        font-weight: 400 !important;
+        opacity: 0.75 !important;
+    }
+    
+    /* Labels above search bars */
+    .stTextInput label, .stDateInput label, .stTimeInput label {
+        font-size: 0.96rem !important;
+        font-weight: 700 !important;
+        color: #7C2D12 !important;
+        margin-bottom: 4px !important;
+    }
+    
+    /* Date and Time Inputs Matching Style */
+    div[data-baseweb="select"] > div {
+        border: 2px solid #FB923C !important;
+        border-radius: 12px !important;
+        background: #FFFFFF !important;
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.10) !important;
+    }
+    
+    /* Radiant Orange Action Buttons */
+    div.stButton > button {
+        background: linear-gradient(135deg, #F97316 0%, #EA580C 100%) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        padding: 10px 20px !important;
+        box-shadow: 0 4px 14px rgba(234, 88, 12, 0.28) !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+    
+    div.stButton > button:hover {
+        background: linear-gradient(135deg, #FB923C 0%, #C2410C 100%) !important;
+        box-shadow: 0 6px 20px rgba(234, 88, 12, 0.38) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    /* Top Brand Tag */
+    .brand-title {
+        font-size: 1.85rem;
         font-weight: 800;
-        color: #0F172A;
+        color: #7C2D12;
+        letter-spacing: -0.6px;
         display: flex;
         align-items: center;
-        gap: 8px;
-        letter-spacing: -0.4px;
-        margin-bottom: 4px;
+        gap: 10px;
     }
-    .hero-search-sub {
-        font-size: 0.90rem;
-        color: #64748B;
-        margin-bottom: 16px;
+    .brand-badge {
+        font-size: 0.80rem;
+        font-weight: 700;
+        color: #EA580C;
+        background: #FFF7ED;
+        border: 1.5px solid #FDBA74;
+        padding: 4px 10px;
+        border-radius: 8px;
+    }
+    .trust-badge {
+        font-size: 0.80rem;
+        font-weight: 700;
+        color: #15803D;
+        background: #F0FDF4;
+        border: 1.5px solid #BBF7D0;
+        padding: 4px 10px;
+        border-radius: 8px;
     }
     
-    /* Scope pills */
-    .scope-pill-bar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-        margin-top: 14px;
-        padding-top: 12px;
-        border-top: 1px solid #F1F5F9;
-        font-size: 0.82rem;
-        color: #475569;
-    }
+    /* Metadata scope pills */
     .meta-pill {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        padding: 4px 10px;
-        border-radius: 6px;
-        background: #F1F5F9;
-        color: #334155;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        background: #FFF7ED;
+        color: #7C2D12;
+        font-size: 0.82rem;
         font-weight: 600;
-        border: 1px solid #E2E8F0;
+        border: 1px solid #FED7AA;
     }
     .meta-pill-active {
-        background: #EFF6FF;
-        color: #2563EB;
-        border: 1px solid #BFDBFE;
+        background: #FFEDD5;
+        color: #EA580C;
+        border: 1.5px solid #FB923C;
     }
     
-    /* Audit Panel Container */
-    .audit-card {
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-left: 4px solid #16A34A;
-        border-radius: 8px;
-        padding: 16px 20px;
-        margin-top: 20px;
-    }
-    
-    /* Evidence Quote Drawer */
-    .quote-box {
-        background: #F1F5F9;
-        border-left: 3px solid #3B82F6;
-        padding: 8px 12px;
-        border-radius: 0 6px 6px 0;
-        font-size: 0.82rem;
-        color: #334155;
-        margin: 4px 0 8px 14px;
-        font-style: italic;
-    }
-    
-    /* Button enhancements */
-    div.stButton > button {
-        border-radius: 8px;
-        font-weight: 600;
-        transition: all 0.15s ease;
-    }
-    
+    /* Hide default chrome */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
@@ -154,16 +186,16 @@ st.markdown("""
 
 
 # ==========================================
-# APP TOP BAR & SETTINGS
+# APP TOP BAR
 # ==========================================
 col_brand, col_cfg = st.columns([4, 1])
 
 with col_brand:
     st.markdown("""
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-        <span style="font-size: 1.6rem; font-weight: 800; color: #0F172A; letter-spacing: -0.5px;">⚡ Briefly</span>
-        <span style="font-size: 0.80rem; font-weight: 700; color: #2563EB; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 3px 8px; border-radius: 6px;">PRE-MEETING AGENT</span>
-        <span style="font-size: 0.80rem; font-weight: 700; color: #16A34A; background: #F0FDF4; border: 1px solid #BBF7D0; padding: 3px 8px; border-radius: 6px;">TRUST & SAFETY AUDITED</span>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <span class="brand-title">⚡ Briefly</span>
+        <span class="brand-badge">PRE-MEETING AGENT</span>
+        <span class="trust-badge">🛡️ TRUST & SAFETY AUDITED</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -218,22 +250,28 @@ sample_invites = CalendarParser.get_sample_invites()
 
 # ==========================================
 # THE MAIN HIGHLIGHT: COMMAND & SEARCH ENGINE
+# (Two Extra-Large, High-Visibility Search Bars)
 # ==========================================
-with st.container():
+with st.container(border=True):
     st.markdown("""
-    <div class="hero-search-card">
-        <div class="hero-search-title">🔍 Research Any Company, Attendee or Meeting Live</div>
-        <div class="hero-search-sub">Generate attendee profiles, 30-day verified intelligence, and goal-aware strategic questions with 100% click-to-evidence grounding.</div>
+        <div style="font-size: 1.40rem; font-weight: 800; color: #7C2D12; display: flex; align-items: center; gap: 8px; letter-spacing: -0.4px; margin-bottom: 2px;">
+            🔍 Research Any Company, Attendee or Meeting Live
+        </div>
+        <div style="font-size: 0.95rem; color: #9A3412; margin-bottom: 18px; font-weight: 500;">
+            Generate attendee profiles, 30-day verified intelligence, and goal-aware strategic questions with 100% click-to-evidence grounding.
+        </div>
     """, unsafe_allow_html=True)
 
-    # Row 1: Target Entity, Date, Time, Action Button
-    col_s1, col_s2, col_s3, col_s4 = st.columns([3.0, 1.4, 1.1, 1.8])
+    # SEARCH BAR #1: MAIN TARGET ENTITY SEARCH BAR (Prominent, High Visibility)
+    st.markdown("<div style='font-size: 1.05rem; font-weight: 800; color: #7C2D12; margin-bottom: 4px;'>🔍 1. TARGET ENTITY SEARCH (Company, Executive or Topic)</div>", unsafe_allow_html=True)
+    
+    col_s1, col_s2, col_s3, col_s4 = st.columns([3.2, 1.4, 1.1, 1.8])
 
     with col_s1:
         entity_query = st.text_input(
             "Target Entity",
             value=st.session_state.get("query_input_val", ""),
-            placeholder="e.g. Stripe, Anthropic, Databricks, Satya Nadella...",
+            placeholder="Type company or person (e.g. Stripe, Anthropic, Databricks, Satya Nadella)...",
             label_visibility="collapsed"
         )
 
@@ -254,43 +292,49 @@ with st.container():
     with col_s4:
         run_btn = st.button("⚡ Generate Brief", type="primary", use_container_width=True)
 
-    # Row 2: Meeting Goal & Attendee Input
-    col_g1, col_g2 = st.columns([2.5, 2.5])
+    st.write("")
+
+    # SEARCH BAR #2: MEETING OBJECTIVE / STRATEGIC GOAL SEARCH BAR (Prominent, High Visibility)
+    st.markdown("<div style='font-size: 1.05rem; font-weight: 800; color: #7C2D12; margin-bottom: 4px;'>🎯 2. MEETING OBJECTIVE & STRATEGIC GOAL SEARCH</div>", unsafe_allow_html=True)
+    
+    col_g1, col_g2 = st.columns([3.2, 2.5])
+
     with col_g1:
         meeting_goal_input = st.text_input(
-            "🎯 Meeting Objective / Goal (Optional)",
+            "Meeting Objective",
             value=st.session_state.get("goal_input_val", ""),
-            placeholder="e.g. Negotiate enterprise volume tiers for agentic checkout protocol"
+            placeholder="Type target goal (e.g. Negotiate enterprise volume tiers for agentic checkout protocol)...",
+            label_visibility="collapsed"
         )
+
     with col_g2:
         attendees_input = st.text_input(
-            "👥 Key Attendees / Participants (Optional, comma-separated)",
+            "Key Attendees",
             value=st.session_state.get("attendees_input_val", ""),
-            placeholder="e.g. Patrick Collison, Will Gaybrick"
+            placeholder="Key attendees (e.g. Patrick Collison, Will Gaybrick)...",
+            label_visibility="collapsed"
         )
 
-    # Row 3: Brief Tone & Format Toggles
-    col_mode, col_blank = st.columns([3.5, 1.5])
-    with col_mode:
-        tone_choice = st.radio(
-            "Format & Tone Toggle",
-            options=[
-                ToneMode.EXECUTIVE.value,
-                ToneMode.STANDARD.value,
-                ToneMode.DEEP_DIVE.value
-            ],
-            index=1,
-            horizontal=True
-        )
+    # Format & Tone Toggle
+    st.write("")
+    tone_choice = st.radio(
+        "Format & Tone Toggle",
+        options=[
+            ToneMode.EXECUTIVE.value,
+            ToneMode.STANDARD.value,
+            ToneMode.DEEP_DIVE.value
+        ],
+        index=1,
+        horizontal=True
+    )
 
-    # Selected tone mapping
     selected_tone = ToneMode.STANDARD
     if "Executive" in tone_choice:
         selected_tone = ToneMode.EXECUTIVE
     elif "Deep-Dive" in tone_choice:
         selected_tone = ToneMode.DEEP_DIVE
 
-    # Calendar Invite Parser Expander (Auto-Trigger Feature)
+    # Calendar Invite Parser Expander
     with st.expander("📅 Import / Auto-Trigger from Calendar Invite (.ics or text)", expanded=False):
         st.caption("Paste meeting invite text or choose a preset to automatically extract date, attendees, and goal:")
         col_c_sel, col_c_btn = st.columns([3, 1])
@@ -317,7 +361,7 @@ with st.container():
     w_display = f"{w_start.strftime('%b %d')} – {meeting_dt.strftime('%b %d, %Y')}"
 
     st.markdown(f"""
-        <div class="scope-pill-bar">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1.5px solid #FED7AA;">
             <span class="meta-pill">🗓️ Meeting: <b>{meeting_dt.strftime('%b %d, %Y at %I:%M %p')}</b></span>
             <span class="meta-pill meta-pill-active">⏳ 30-Day Window: <b>{w_display}</b></span>
             <span class="meta-pill">🛡️ Verification: <b>100% Grounded Quotes</b></span>
@@ -328,7 +372,7 @@ with st.container():
     # Instant Demo Preset Chips
     col_chip_lbl, col_c1, col_c2, col_c3, col_c4 = st.columns([1.6, 1.4, 1.6, 1.8, 1.0])
     with col_chip_lbl:
-        st.markdown("<div style='margin-top: 6px; font-size: 0.82rem; font-weight: 700; color: #64748B;'>⚡ Instant Demos:</div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 6px; font-size: 0.85rem; font-weight: 800; color: #7C2D12;'>⚡ Instant Demos:</div>", unsafe_allow_html=True)
     with col_c1:
         if st.button("🏢 Stripe", key="chip_stripe", use_container_width=True):
             st.session_state["active_brief"] = demo_briefs["Stripe"]
@@ -344,7 +388,7 @@ with st.container():
             st.session_state["query_input_val"] = "Anthropic"
             st.rerun()
     with col_c3:
-        if st.button("🏥 Acme Health (Quiet Entity)", key="chip_acme", use_container_width=True):
+        if st.button("🏥 Acme Health (Quiet)", key="chip_acme", use_container_width=True):
             st.session_state["active_brief"] = demo_briefs["Acme Health (Quiet Entity)"]
             st.session_state["active_pdf"] = PDFExporter.render(demo_briefs["Acme Health (Quiet Entity)"])
             st.session_state["active_entity_name"] = "Acme Health Tech"
@@ -359,8 +403,6 @@ with st.container():
             st.session_state["goal_input_val"] = ""
             st.session_state["attendees_input_val"] = ""
             st.rerun()
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ==========================================
@@ -471,7 +513,7 @@ with tab_brief:
     with st.container(border=True):
         col_m_l, col_m_r = st.columns([3, 2])
         with col_m_l:
-            st.caption(f":blue[**EXECUTIVE BRIEF  •  {brief.tone_mode.name}  •  30-DAY INTELLIGENCE**]")
+            st.caption(f":orange[**EXECUTIVE BRIEF  •  {brief.tone_mode.name}  •  30-DAY INTELLIGENCE**]")
             st.title(entity_name)
             if brief.entity.role_or_industry:
                 st.markdown(f"**{clean_text(brief.entity.role_or_industry)}**")
@@ -526,7 +568,7 @@ with tab_brief:
                 with st.container(border=True):
                     if brief.news_items:
                         for item in brief.news_items:
-                            status_badge = f":blue[[{item.evidence.status.value}]]" if item.evidence else ""
+                            status_badge = f":orange[[{item.evidence.status.value}]]" if item.evidence else ""
                             fresh_badge = f"*{item.evidence.freshness}*" if item.evidence else ""
                             st.markdown(f"- {clean_text(item.statement)} **{item.citation_tag}** {status_badge} • {fresh_badge}")
                             if item.evidence and item.evidence.verbatim_quote:
@@ -591,8 +633,8 @@ with tab_brief:
         # In-Brief Hallucination Audit Panel
         st.markdown("---")
         st.markdown("""
-        <div class="audit-card">
-            <div style="font-weight: 700; color: #166534; font-size: 0.95rem; margin-bottom: 6px;">
+        <div style="background: #FFF7ED; border: 1.5px solid #FDBA74; border-left: 4px solid #EA580C; border-radius: 8px; padding: 16px 20px; margin-top: 20px;">
+            <div style="font-weight: 800; color: #7C2D12; font-size: 1.0rem; margin-bottom: 6px;">
                 🛡️ Hallucination Audit Panel
             </div>
         """, unsafe_allow_html=True)
