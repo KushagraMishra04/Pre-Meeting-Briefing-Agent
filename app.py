@@ -105,29 +105,86 @@ st.markdown("""
     
     /* Date and Time Inputs Matching Style */
     div[data-baseweb="select"] > div {
-        border: 2px solid #FB923C !important;
+        border: 2px solid #FDBA74 !important;
         border-radius: 12px !important;
         background: #FFFFFF !important;
-        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.10) !important;
+        box-shadow: 0 4px 14px rgba(251, 146, 60, 0.08) !important;
     }
     
-    /* Radiant Orange Action Buttons */
-    div.stButton > button {
-        background: linear-gradient(135deg, #F97316 0%, #EA580C 100%) !important;
+    /* Primary Action Buttons: Soft Peach into Warm Light Orange */
+    div.stButton > button[kind="primary"],
+    div.stDownloadButton > button[kind="primary"],
+    button[data-testid="baseButton-primary"],
+    button[kind="primary"] {
+        background: linear-gradient(135deg, #FFB894 0%, #FA8958 100%) !important;
         color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 10px !important;
+        border: 1px solid #FDBA74 !important;
+        border-radius: 12px !important;
         font-weight: 700 !important;
-        font-size: 0.95rem !important;
-        padding: 10px 20px !important;
-        box-shadow: 0 4px 14px rgba(234, 88, 12, 0.28) !important;
-        transition: all 0.15s ease-in-out !important;
+        font-size: 0.96rem !important;
+        padding: 10px 22px !important;
+        box-shadow: 0 4px 14px rgba(251, 146, 60, 0.22) !important;
+        text-shadow: 0 1px 2px rgba(124, 45, 18, 0.35) !important;
+        transition: all 0.18s ease-in-out !important;
     }
     
-    div.stButton > button:hover {
-        background: linear-gradient(135deg, #FB923C 0%, #C2410C 100%) !important;
-        box-shadow: 0 6px 20px rgba(234, 88, 12, 0.38) !important;
+    div.stButton > button[kind="primary"]:hover,
+    div.stDownloadButton > button[kind="primary"]:hover,
+    button[data-testid="baseButton-primary"]:hover,
+    button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #FFC4A2 0%, #F97E4A 100%) !important;
+        box-shadow: 0 6px 18px rgba(251, 146, 60, 0.30) !important;
+        border-color: #FB923C !important;
         transform: translateY(-1px) !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Secondary / Chip / Standard Buttons: Delicate Peach Card Pill */
+    div.stButton > button[kind="secondary"],
+    div.stDownloadButton > button[kind="secondary"],
+    button[data-testid="baseButton-secondary"],
+    button[kind="secondary"],
+    div.stButton > button:not([kind="primary"]),
+    div.stDownloadButton > button:not([kind="primary"]) {
+        background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%) !important;
+        color: #9A3412 !important;
+        border: 1.5px solid #FDBA74 !important;
+        border-radius: 10px !important;
+        font-weight: 650 !important;
+        font-size: 0.90rem !important;
+        padding: 8px 16px !important;
+        box-shadow: 0 2px 8px rgba(251, 146, 60, 0.08) !important;
+        transition: all 0.18s ease-in-out !important;
+    }
+
+    div.stButton > button[kind="secondary"]:hover,
+    div.stDownloadButton > button[kind="secondary"]:hover,
+    button[data-testid="baseButton-secondary"]:hover,
+    button[kind="secondary"]:hover,
+    div.stButton > button:not([kind="primary"]):hover,
+    div.stDownloadButton > button:not([kind="primary"]):hover {
+        background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%) !important;
+        border-color: #FB923C !important;
+        color: #7C2D12 !important;
+        box-shadow: 0 4px 12px rgba(251, 146, 60, 0.18) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Link Buttons */
+    div.stLinkButton > a {
+        background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%) !important;
+        color: #9A3412 !important;
+        border: 1.5px solid #FDBA74 !important;
+        border-radius: 10px !important;
+        font-weight: 650 !important;
+        text-decoration: none !important;
+        transition: all 0.18s ease-in-out !important;
+    }
+
+    div.stLinkButton > a:hover {
+        background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%) !important;
+        border-color: #FB923C !important;
+        color: #7C2D12 !important;
     }
     
     /* Top Brand Tag */

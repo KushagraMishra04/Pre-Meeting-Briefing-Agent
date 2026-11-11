@@ -50,7 +50,7 @@ class PDFExporter:
     """Renders BriefData into an executive PDF with warm peach & orange theme."""
 
     COLOR_PRIMARY = (28, 25, 23)        # Dark Chocolate / Slate #1C1917
-    COLOR_ACCENT = (234, 88, 12)        # Burnt Orange #EA580C
+    COLOR_ACCENT = (250, 137, 88)       # Soft Light Apricot Orange #FA8958
     COLOR_TEXT_MAIN = (41, 37, 36)      # Stone 800 #292524
     COLOR_TEXT_MUTED = (120, 113, 108)  # Stone 500 #78716C
     COLOR_HEADER_BG = (255, 247, 237)   # Peach Cream #FFF7ED
