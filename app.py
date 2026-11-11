@@ -248,6 +248,80 @@ st.markdown("""
         border: 1.5px solid #FB923C;
         font-weight: 700;
     }
+
+    /* ==========================================
+       HIGH-VISIBILITY SEGMENTED CONTROL TABS
+       ========================================== */
+    div[data-testid="stTabs"] {
+        margin-top: 14px !important;
+        margin-bottom: 24px !important;
+    }
+
+    div[data-baseweb="tab-list"] {
+        background: rgba(255, 255, 255, 0.96) !important;
+        border: 2px solid #FDBA74 !important;
+        border-radius: 16px !important;
+        padding: 6px 8px !important;
+        gap: 6px !important;
+        box-shadow: 0 6px 20px rgba(251, 146, 60, 0.14) !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+    }
+
+    button[data-baseweb="tab"] {
+        background: transparent !important;
+        border: 1.5px solid transparent !important;
+        border-radius: 12px !important;
+        padding: 10px 18px !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        color: #7C2D12 !important;
+        transition: all 0.18s ease-in-out !important;
+        cursor: pointer !important;
+    }
+
+    button[data-baseweb="tab"] div[data-testid="stMarkdownContainer"] p,
+    button[data-baseweb="tab"] p,
+    button[data-baseweb="tab"] span {
+        color: #7C2D12 !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+    }
+
+    button[data-baseweb="tab"]:hover {
+        background: #FFF7ED !important;
+        border-color: #FED7AA !important;
+        transform: translateY(-1px) !important;
+    }
+
+    button[data-baseweb="tab"]:hover div[data-testid="stMarkdownContainer"] p,
+    button[data-baseweb="tab"]:hover p,
+    button[data-baseweb="tab"]:hover span {
+        color: #EA580C !important;
+    }
+
+    /* Active Selected Tab: Solid Radiant Light Orange Pill */
+    button[data-baseweb="tab"][aria-selected="true"] {
+        background: linear-gradient(135deg, #FFA053 0%, #FB8231 100%) !important;
+        border: 1.5px solid #FA7C2B !important;
+        box-shadow: 0 4px 14px rgba(251, 130, 49, 0.35) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    button[data-baseweb="tab"][aria-selected="true"] div[data-testid="stMarkdownContainer"] p,
+    button[data-baseweb="tab"][aria-selected="true"] p,
+    button[data-baseweb="tab"][aria-selected="true"] span {
+        color: #FFFFFF !important;
+        font-weight: 800 !important;
+        text-shadow: 0 1px 2px rgba(124, 45, 18, 0.45) !important;
+    }
+
+    /* Remove default thin grey underline */
+    div[data-baseweb="tab-highlight"],
+    div[data-baseweb="tab-border"] {
+        display: none !important;
+    }
     
     /* Hide default chrome */
     #MainMenu {visibility: hidden;}
@@ -405,26 +479,43 @@ with st.container(border=True):
     elif "Deep-Dive" in tone_choice:
         selected_tone = ToneMode.DEEP_DIVE
 
-    # Calendar Invite Parser Expander
-    with st.expander("📅 Import / Auto-Trigger from Calendar Invite (.ics or text)", expanded=False):
-        st.caption("Paste meeting invite text or choose a preset to automatically extract date, attendees, and goal:")
-        col_c_sel, col_c_btn = st.columns([3, 1])
-        with col_c_sel:
-            chosen_invite_key = st.selectbox("Sample Calendar Invites", options=list(sample_invites.keys()))
-        with col_c_btn:
-            st.write("")
-            load_cal_btn = st.button("Apply Calendar Invite", use_container_width=True)
+    # Two Feature Toolbars: Calendar Import & Recurring Sync Diff
+    col_exp1, col_exp2 = st.columns(2)
+    with col_exp1:
+        with st.expander("📅 Import Calendar Invite (.ics or text)", expanded=False):
+            st.caption("Paste meeting invite text or choose a preset to extract date, attendees, and goal:")
+            col_c_sel, col_c_btn = st.columns([2.5, 1.2])
+            with col_c_sel:
+                chosen_invite_key = st.selectbox("Sample Calendar Invites", options=list(sample_invites.keys()))
+            with col_c_btn:
+                st.write("")
+                load_cal_btn = st.button("Apply Invite", use_container_width=True)
 
-        if load_cal_btn:
-            raw_ics = sample_invites[chosen_invite_key]
-            parsed = CalendarParser.parse_ics(raw_ics) if "BEGIN:VCALENDAR" in raw_ics else CalendarParser.parse_plain_text(raw_ics)
-            st.session_state["query_input_val"] = chosen_invite_key.split()[0]
-            st.session_state["goal_input_val"] = parsed.goal_agenda
-            st.session_state["attendees_input_val"] = ", ".join(parsed.attendees)
-            st.session_state["meeting_date_val"] = parsed.meeting_time.date()
-            st.session_state["meeting_time_val"] = parsed.meeting_time.time()
-            st.success(f"✓ Parsed invite for '{parsed.title}' with {len(parsed.attendees)} attendees!")
-            st.rerun()
+            if load_cal_btn:
+                raw_ics = sample_invites[chosen_invite_key]
+                parsed = CalendarParser.parse_ics(raw_ics) if "BEGIN:VCALENDAR" in raw_ics else CalendarParser.parse_plain_text(raw_ics)
+                st.session_state["query_input_val"] = chosen_invite_key.split()[0]
+                st.session_state["goal_input_val"] = parsed.goal_agenda
+                st.session_state["attendees_input_val"] = ", ".join(parsed.attendees)
+                st.session_state["meeting_date_val"] = parsed.meeting_time.date()
+                st.session_state["meeting_time_val"] = parsed.meeting_time.time()
+                st.success(f"✓ Parsed invite for '{parsed.title}' with {len(parsed.attendees)} attendees!")
+                st.rerun()
+
+    with col_exp2:
+        with st.expander("🔄 Recurring Meeting? 'Since Last Brief' Diff", expanded=False):
+            st.caption("Provide prior meeting notes to highlight only NEW developments since your last sync:")
+            diff_notes_val = st.text_area(
+                "Prior Sync Notes",
+                value=st.session_state.get("prev_notes_input_val", "Discussed initial merchant acquiring rates. Agreed to explore pilot integration next quarter. Patrick Collison mentioned stablecoin roadmap."),
+                height=68,
+                key="diff_notes_quick",
+                label_visibility="collapsed"
+            )
+            if st.button("Load Prior Notes for Diff", key="btn_apply_quick_diff", use_container_width=True):
+                st.session_state["prev_notes_input_val"] = diff_notes_val
+                st.success("✓ Prior meeting context loaded! View the diff in the '🔄 Since Last Brief' tab.")
+                st.rerun()
 
     # Scope Pills
     meeting_dt = datetime.combine(m_date, m_time)
@@ -599,6 +690,20 @@ with tab_brief:
 
         st.divider()
 
+        # Recurring Meeting Feature Callout Banner
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); border: 1.5px solid #FB923C; border-radius: 12px; padding: 10px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.25rem;">🔄</span>
+                <div>
+                    <span style="font-weight: 800; font-size: 0.92rem; color: #7C2D12;">Recurring Meeting? </span>
+                    <span style="font-size: 0.86rem; color: #9A3412;">Isolate and highlight only new developments since your last sync in the <b>'🔄 Since Last Brief (Diff)'</b> tab above.</span>
+                </div>
+            </div>
+            <span style="font-size: 0.78rem; font-weight: 700; color: #EA580C; background: #FFFFFF; border: 1px solid #FDBA74; padding: 3px 10px; border-radius: 20px;">RECURRING DIFF ENGINE</span>
+        </div>
+        """, unsafe_allow_html=True)
+
         # Attendee Profiles if present
         if brief.attendees:
             st.markdown("##### 👥 Attendee Profiles (Privacy-Compliant)")
@@ -769,16 +874,48 @@ with tab_chat:
 # TAB 3: SINCE LAST BRIEF (DIFF ENGINE)
 # ------------------------------------------
 with tab_diff:
-    st.markdown("#### 🔄 'Since Last Brief' Diff (Recurring Meetings)")
-    st.caption("Isolates and highlights only what has changed since your previous meeting with this team.")
+    st.markdown("""
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 6px;">
+            <div style="font-size: 1.25rem; font-weight: 800; color: #7C2D12;">
+                🔄 'Since Last Brief' Diff Engine (Recurring Meetings)
+            </div>
+            <span style="font-size: 0.80rem; font-weight: 700; color: #EA580C; background: #FFF7ED; border: 1.5px solid #FDBA74; padding: 4px 12px; border-radius: 20px;">
+                DELTA ISOLATION ACTIVE
+            </span>
+        </div>
+        <div style="font-size: 0.90rem; color: #9A3412; margin-bottom: 16px;">
+            Compare context against your previous meeting notes to filter out old discussions and highlight <b>ONLY new developments</b> (new hires, product launches, policy updates, or strategic shifts) over the past 30 days.
+        </div>
+    """, unsafe_allow_html=True)
+
+    default_notes_text = (
+        "In our previous sync last month, we reviewed Stripe's stablecoin payments expansion and discussed initial partner integration timelines. "
+        "Patrick mentioned evaluating automated credit facilities with enterprise logistics partners."
+    )
+    current_notes_val = st.session_state.get("prev_notes_input_val", default_notes_text)
+
+    col_btn_pre, col_btn_clr = st.columns([3, 1])
+    with col_btn_pre:
+        if st.button("⚡ Load Realistic 30-Day Prior Notes Preset", key="btn_load_preset_notes", use_container_width=True):
+            st.session_state["prev_notes_input_val"] = default_notes_text
+            st.rerun()
+    with col_btn_clr:
+        if st.button("🧹 Clear Notes", key="btn_clear_notes", use_container_width=True):
+            st.session_state["prev_notes_input_val"] = ""
+            st.rerun()
 
     prev_notes_input = st.text_area(
-        "Previous Meeting Notes (Optional)",
-        value="Discussed initial merchant acquiring rates. Agreed to explore pilot integration next quarter. Patrick Collison mentioned stablecoin roadmap.",
-        height=100
+        "Previous Meeting Notes / Discussion Context",
+        value=current_notes_val,
+        height=95,
+        placeholder="Paste bullets, transcript excerpts, or summary from your prior meeting with this team..."
     )
 
-    if st.button("Compute Intelligence Delta", type="primary"):
+    col_c_diff, col_c_info = st.columns([1.5, 3])
+    with col_c_diff:
+        recompute_btn = st.button("⚡ Compute Intelligence Delta", type="primary", use_container_width=True)
+
+    if recompute_btn or "computed_diff" not in st.session_state:
         diff_res = DiffEngine.compute_diff(
             current_news=brief.news_items,
             current_hires=brief.hires_departures,
@@ -789,18 +926,40 @@ with tab_diff:
 
     active_diff = st.session_state.get("computed_diff", brief.diff)
     if active_diff:
-        st.markdown(f"**Comparing against:** *{active_diff.previous_meeting_date}*")
+        st.markdown(f"""
+            <div style="background: #FFFFFF; border: 1.5px solid #FDBA74; border-radius: 12px; padding: 10px 16px; margin: 14px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                <span style="font-size: 0.88rem; color: #7C2D12; font-weight: 700;">
+                    📊 Baseline Comparison: <i>{active_diff.previous_meeting_date}</i>
+                </span>
+                <span style="font-size: 0.82rem; color: #15803D; font-weight: 700;">
+                    ✓ Prior Topics Filtered • Incremental Delta Isolated
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+
         col_df1, col_df2 = st.columns(2)
         with col_df1:
-            st.markdown("##### 🚀 New External Developments")
-            for nd in active_diff.new_developments:
-                st.success(f"• {clean_text(nd)}")
+            with st.container(border=True):
+                st.markdown("##### 🚀 New External Developments")
+                st.caption("Fresh intelligence that occurred since your prior sync:")
+                if active_diff.new_developments:
+                    for nd in active_diff.new_developments:
+                        st.success(f"• {clean_text(nd)}")
+                else:
+                    st.info("Nothing new since last sync.")
+
         with col_df2:
-            st.markdown("##### 👥 Leadership & Product Shifts")
-            for lh in active_diff.leadership_updates:
-                st.info(f"• **Leadership:** {clean_text(lh)}")
-            for ps in active_diff.product_shifts:
-                st.info(f"• **Product:** {clean_text(ps)}")
+            with st.container(border=True):
+                st.markdown("##### 👥 Leadership & Product Shifts")
+                st.caption("Personnel changes and new launches not discussed previously:")
+                if active_diff.leadership_updates:
+                    for lh in active_diff.leadership_updates:
+                        st.info(f"• **Leadership Move:** {clean_text(lh)}")
+                if active_diff.product_shifts:
+                    for ps in active_diff.product_shifts:
+                        st.info(f"• **Product Launch:** {clean_text(ps)}")
+                if not active_diff.leadership_updates and not active_diff.product_shifts:
+                    st.info("No new leadership or product announcements since last sync.")
 
 
 # ------------------------------------------

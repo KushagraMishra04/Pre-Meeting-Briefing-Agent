@@ -35,22 +35,22 @@ class DiffEngine:
             )
 
         prev_lower = previous_notes_or_brief.lower()
+        stopwords = {"the", "a", "an", "in", "on", "at", "to", "for", "of", "and", "or", "with", "by", "from", "is", "was"}
+
+        def is_already_covered(statement: str) -> bool:
+            """Determines if a claim was already discussed based on key 2-word phrase overlap."""
+            words = [w.strip(".,;:()") for w in statement.lower().split() if w.strip(".,;:()") not in stopwords and len(w) > 3]
+            if len(words) >= 2:
+                for i in range(len(words) - 1):
+                    bigram = f"{words[i]} {words[i+1]}"
+                    if bigram in prev_lower:
+                        return True
+            return False
 
         # Filter out anything already discussed in previous notes
-        delta_news = [
-            c.statement for c in current_news
-            if not any(word in prev_lower for word in c.statement.lower().split()[:4])
-        ]
-
-        delta_hires = [
-            c.statement for c in current_hires
-            if not any(word in prev_lower for word in c.statement.lower().split()[:4])
-        ]
-
-        delta_launches = [
-            c.statement for c in current_launches
-            if not any(word in prev_lower for word in c.statement.lower().split()[:4])
-        ]
+        delta_news = [c.statement for c in current_news if not is_already_covered(c.statement)]
+        delta_hires = [c.statement for c in current_hires if not is_already_covered(c.statement)]
+        delta_launches = [c.statement for c in current_launches if not is_already_covered(c.statement)]
 
         return SinceLastBriefDiff(
             previous_meeting_date="Last Sync",

@@ -132,7 +132,7 @@ class CalendarParser:
         att_match = re.search(r"(?:attendees|participants|who):\s*(.+)", joined_text, re.IGNORECASE)
         if att_match:
             raw_atts = att_match.group(1).split(",")
-            attendees = [a.strip() for a in raw_atts if a.strip()]
+            attendees = [re.sub(r"\s*\([^)]*@.*?\)", "", a).strip() for a in raw_atts if a.strip()]
         else:
             # Look for email patterns
             emails = re.findall(r"[\w\.-]+@[\w\.-]+\.\w+", joined_text)

@@ -15,7 +15,7 @@ class EntityResolver:
     """Resolves entity details, 30-day time window, and search queries."""
 
     PERSON_INDICATORS = [
-        r"\b(ceo|cto|cfo|coo|cpo|cmo|founder|co-founder|director|vp|president|head of|dr\.|mr\.|ms\.|mrs\.)\b",
+        r"\b(ceo|cto|cfo|coo|cpo|cmo|founder|co-founder|director|vp|president|head of|dr|mr|ms|mrs)\b",
         r"\b(exec|executive|lead|investor|partner)\b",
     ]
 
