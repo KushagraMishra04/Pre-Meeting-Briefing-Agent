@@ -257,34 +257,39 @@ st.markdown("""
         margin-bottom: 24px !important;
     }
 
-    /* Tab List Container Bar */
+    /* Tab List Container Bar - Frosted Oval Island Blended with Peach Theme */
     div[data-testid="stTabs"] [role="tablist"],
     div[data-testid="stTabs"] > div:first-child,
     .stTabs [role="tablist"] {
-        background: rgba(255, 255, 255, 0.95) !important;
-        border: 2px solid #FDBA74 !important;
-        border-radius: 16px !important;
-        padding: 8px 10px !important;
-        gap: 8px !important;
-        box-shadow: 0 6px 20px rgba(251, 146, 60, 0.14) !important;
-        display: flex !important;
+        background: rgba(255, 247, 237, 0.65) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        border: 1.5px solid rgba(251, 146, 60, 0.35) !important;
+        border-radius: 9999px !important; /* Full Oval Capsule */
+        padding: 5px 8px !important;
+        gap: 6px !important;
+        box-shadow: 0 4px 16px rgba(251, 146, 60, 0.08) !important;
+        display: inline-flex !important;
+        max-width: 100% !important;
         flex-wrap: wrap !important;
         align-items: center !important;
     }
 
-    /* Individual Tab Buttons - Clear, Clickable Pill Style */
+    /* Individual Tab Buttons - Oval Capsule Shape Blended with Site */
     div[data-testid="stTabs"] button,
     div[data-testid="stTabs"] [role="tab"],
     div[data-testid="stTab"],
     button[data-baseweb="tab"] {
-        background: #FFFBF7 !important;
-        border: 1.5px solid #FED7AA !important;
-        border-radius: 12px !important;
-        padding: 10px 18px !important;
+        background: rgba(255, 255, 255, 0.70) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        border: 1.5px solid rgba(253, 186, 116, 0.60) !important;
+        border-radius: 9999px !important; /* Full Oval */
+        padding: 8px 18px !important;
         font-weight: 700 !important;
-        font-size: 0.94rem !important;
+        font-size: 0.92rem !important;
         color: #7C2D12 !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+        box-shadow: 0 2px 6px rgba(234, 88, 12, 0.04) !important;
         cursor: pointer !important;
         transition: all 0.18s ease-in-out !important;
         margin: 2px !important;
@@ -297,17 +302,18 @@ st.markdown("""
     div[data-testid="stTab"] div {
         color: #7C2D12 !important;
         font-weight: 700 !important;
-        font-size: 0.94rem !important;
+        font-size: 0.92rem !important;
     }
 
-    /* Hover Elevation: Clearly indicates it is clickable! */
+    /* Hover Elevation */
     div[data-testid="stTabs"] button:hover,
     div[data-testid="stTabs"] [role="tab"]:hover,
     div[data-testid="stTab"]:hover {
-        background: #FFEDD5 !important;
+        background: rgba(255, 237, 213, 0.92) !important;
         border-color: #FB923C !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 14px rgba(251, 146, 60, 0.22) !important;
+        color: #C2410C !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 3px 10px rgba(251, 146, 60, 0.18) !important;
     }
 
     div[data-testid="stTabs"] button:hover p,
@@ -317,14 +323,15 @@ st.markdown("""
         color: #C2410C !important;
     }
 
-    /* Active Selected Tab: Solid Radiant Light Orange Clickable Button */
+    /* Active Selected Tab: Radiant Light Orange Oval */
     div[data-testid="stTabs"] button[aria-selected="true"],
     div[data-testid="stTabs"] [role="tab"][aria-selected="true"],
     div[data-testid="stTab"][aria-selected="true"] {
         background: linear-gradient(135deg, #FFA053 0%, #FB8231 100%) !important;
         border: 1.5px solid #FA7C2B !important;
-        box-shadow: 0 4px 16px rgba(251, 130, 49, 0.40) !important;
-        transform: translateY(-2px) !important;
+        border-radius: 9999px !important; /* Full Oval */
+        box-shadow: 0 4px 14px rgba(251, 130, 49, 0.32) !important;
+        transform: translateY(-1px) !important;
     }
 
     div[data-testid="stTabs"] button[aria-selected="true"] p,
