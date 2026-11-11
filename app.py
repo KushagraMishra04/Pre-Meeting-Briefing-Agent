@@ -104,27 +104,30 @@ st.markdown("""
     }
     
     /* Date and Time Inputs Matching Style */
-    div[data-baseweb="select"] > div {
-        border: 2px solid #FDBA74 !important;
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="input"] {
+        border: 2px solid #FB923C !important;
         border-radius: 12px !important;
         background: #FFFFFF !important;
-        box-shadow: 0 4px 14px rgba(251, 146, 60, 0.08) !important;
+        min-height: 50px !important;
+        box-shadow: 0 4px 14px rgba(251, 146, 60, 0.10) !important;
     }
     
-    /* Primary Action Buttons: Soft Peach into Warm Light Orange */
+    /* Primary Action Buttons: Radiant Light Orange */
     div.stButton > button[kind="primary"],
     div.stDownloadButton > button[kind="primary"],
     button[data-testid="baseButton-primary"],
     button[kind="primary"] {
-        background: linear-gradient(135deg, #FFB894 0%, #FA8958 100%) !important;
+        background: linear-gradient(135deg, #FFA053 0%, #FB8231 100%) !important;
         color: #FFFFFF !important;
-        border: 1px solid #FDBA74 !important;
+        border: 1px solid #FA7C2B !important;
         border-radius: 12px !important;
-        font-weight: 700 !important;
-        font-size: 0.96rem !important;
-        padding: 10px 22px !important;
-        box-shadow: 0 4px 14px rgba(251, 146, 60, 0.22) !important;
-        text-shadow: 0 1px 2px rgba(124, 45, 18, 0.35) !important;
+        font-weight: 750 !important;
+        font-size: 1.02rem !important;
+        padding: 11px 22px !important;
+        min-height: 50px !important;
+        box-shadow: 0 4px 14px rgba(251, 130, 49, 0.28) !important;
+        text-shadow: 0 1px 2px rgba(124, 45, 18, 0.40) !important;
         transition: all 0.18s ease-in-out !important;
     }
     
@@ -132,29 +135,32 @@ st.markdown("""
     div.stDownloadButton > button[kind="primary"]:hover,
     button[data-testid="baseButton-primary"]:hover,
     button[kind="primary"]:hover {
-        background: linear-gradient(135deg, #FFC4A2 0%, #F97E4A 100%) !important;
-        box-shadow: 0 6px 18px rgba(251, 146, 60, 0.30) !important;
-        border-color: #FB923C !important;
+        background: linear-gradient(135deg, #FFAC68 0%, #FA751B 100%) !important;
+        box-shadow: 0 6px 20px rgba(251, 130, 49, 0.38) !important;
+        border-color: #F97316 !important;
         transform: translateY(-1px) !important;
         color: #FFFFFF !important;
     }
 
-    /* Secondary / Chip / Standard Buttons: Delicate Peach Card Pill */
+    /* Secondary / Chip / Standard Buttons: Resized Sleek Light-Orange Pills */
     div.stButton > button[kind="secondary"],
     div.stDownloadButton > button[kind="secondary"],
     button[data-testid="baseButton-secondary"],
     button[kind="secondary"],
     div.stButton > button:not([kind="primary"]),
     div.stDownloadButton > button:not([kind="primary"]) {
-        background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%) !important;
-        color: #9A3412 !important;
-        border: 1.5px solid #FDBA74 !important;
-        border-radius: 10px !important;
-        font-weight: 650 !important;
-        font-size: 0.90rem !important;
-        padding: 8px 16px !important;
-        box-shadow: 0 2px 8px rgba(251, 146, 60, 0.08) !important;
-        transition: all 0.18s ease-in-out !important;
+        background: linear-gradient(135deg, #FFB073 0%, #FA8638 100%) !important;
+        color: #FFFFFF !important;
+        border: 1px solid #FA7C2B !important;
+        border-radius: 9999px !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 4px 14px !important;
+        box-shadow: 0 2px 8px rgba(250, 134, 56, 0.20) !important;
+        text-shadow: 0 1px 2px rgba(124, 45, 18, 0.35) !important;
+        transition: all 0.15s ease-in-out !important;
     }
 
     div.stButton > button[kind="secondary"]:hover,
@@ -163,28 +169,34 @@ st.markdown("""
     button[kind="secondary"]:hover,
     div.stButton > button:not([kind="primary"]):hover,
     div.stDownloadButton > button:not([kind="primary"]):hover {
-        background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%) !important;
-        border-color: #FB923C !important;
-        color: #7C2D12 !important;
-        box-shadow: 0 4px 12px rgba(251, 146, 60, 0.18) !important;
+        background: linear-gradient(135deg, #FFB882 0%, #F97825 100%) !important;
+        border-color: #F97316 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(250, 134, 56, 0.32) !important;
         transform: translateY(-1px) !important;
     }
 
     /* Link Buttons */
     div.stLinkButton > a {
-        background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%) !important;
-        color: #9A3412 !important;
-        border: 1.5px solid #FDBA74 !important;
-        border-radius: 10px !important;
-        font-weight: 650 !important;
+        background: linear-gradient(135deg, #FFB073 0%, #FA8638 100%) !important;
+        color: #FFFFFF !important;
+        border: 1px solid #FA7C2B !important;
+        border-radius: 9999px !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 4px 14px !important;
         text-decoration: none !important;
+        box-shadow: 0 2px 8px rgba(250, 134, 56, 0.20) !important;
+        text-shadow: 0 1px 2px rgba(124, 45, 18, 0.35) !important;
         transition: all 0.18s ease-in-out !important;
     }
 
     div.stLinkButton > a:hover {
-        background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%) !important;
-        border-color: #FB923C !important;
-        color: #7C2D12 !important;
+        background: linear-gradient(135deg, #FFB882 0%, #F97825 100%) !important;
+        border-color: #F97316 !important;
+        color: #FFFFFF !important;
     }
     
     /* Top Brand Tag */
@@ -221,18 +233,20 @@ st.markdown("""
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 5px 12px;
-        border-radius: 8px;
-        background: #FFF7ED;
+        padding: 5px 14px;
+        border-radius: 9999px;
+        background: #FFFFFF;
         color: #7C2D12;
-        font-size: 0.82rem;
+        font-size: 0.83rem;
         font-weight: 600;
-        border: 1px solid #FED7AA;
+        border: 1.5px solid #FED7AA;
+        box-shadow: 0 1px 4px rgba(251, 146, 60, 0.08);
     }
     .meta-pill-active {
-        background: #FFEDD5;
-        color: #EA580C;
+        background: #FFF7ED;
+        color: #C2410C;
         border: 1.5px solid #FB923C;
+        font-weight: 700;
     }
     
     /* Hide default chrome */
@@ -418,7 +432,7 @@ with st.container(border=True):
     w_display = f"{w_start.strftime('%b %d')} – {meeting_dt.strftime('%b %d, %Y')}"
 
     st.markdown(f"""
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1.5px solid #FED7AA;">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; margin-bottom: 14px; padding-top: 14px; border-top: 1.5px solid #FED7AA;">
             <span class="meta-pill">🗓️ Meeting: <b>{meeting_dt.strftime('%b %d, %Y at %I:%M %p')}</b></span>
             <span class="meta-pill meta-pill-active">⏳ 30-Day Window: <b>{w_display}</b></span>
             <span class="meta-pill">🛡️ Verification: <b>100% Grounded Quotes</b></span>
@@ -426,10 +440,10 @@ with st.container(border=True):
         </div>
     """, unsafe_allow_html=True)
 
-    # Instant Demo Preset Chips
-    col_chip_lbl, col_c1, col_c2, col_c3, col_c4 = st.columns([1.6, 1.4, 1.6, 1.8, 1.0])
+    # Instant Demo Preset Chips (Sleek, compact, perfectly proportioned)
+    col_chip_lbl, col_c1, col_c2, col_c3, col_c4 = st.columns([1.1, 1.0, 1.5, 1.4, 0.8])
     with col_chip_lbl:
-        st.markdown("<div style='margin-top: 6px; font-size: 0.85rem; font-weight: 800; color: #7C2D12;'>⚡ Instant Demos:</div>", unsafe_allow_html=True)
+        st.markdown("<div style='display: flex; align-items: center; height: 36px; font-size: 0.86rem; font-weight: 800; color: #7C2D12;'>⚡ Instant Demos:</div>", unsafe_allow_html=True)
     with col_c1:
         if st.button("🏢 Stripe", key="chip_stripe", use_container_width=True):
             st.session_state["active_brief"] = demo_briefs["Stripe"]
