@@ -14,9 +14,9 @@ ENV/
 
 # Output PDFs & temporary files
 *.pdf
-.streamlit/
+.streamlit/*
+!.streamlit/config.toml
 
 # OS files
 Thumbs.db
 .DS_Store
-
