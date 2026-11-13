@@ -1,5 +1,4 @@
-"""
-Pre-Meeting Briefing Agent - Executive Intelligence Dashboard.
+"""Pre-Meeting Briefing Agent - Executive Intelligence Dashboard.
 Theme: Warm Peach bleeding into Sunset Orange.
 Featuring extra-large, high-visibility search consoles and enterprise trust features.
 """
